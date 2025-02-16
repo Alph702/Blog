@@ -1,0 +1,180 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Kalam:wght@300;400;700&display=swap');
+
+/* Dark Theme Styling */
+body {
+    background-color: #121212;
+    color: #e0e0e0;
+    font-family: "Comic Neue","Kalam",monospace, serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Centered container */
+.container {
+    width: 80%;
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* Blog Post Styles */
+.post {
+    background-color: #1e1e1e;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.post h2 {
+    color: #bb86fc;
+}
+
+.post p {
+    line-height: 1.6;
+}
+
+/* Navigation Bar */
+.navbar {
+    background-color: #1f1f1f;
+    padding: 10px;
+    text-align: center;
+}
+
+.navbar a {
+    color: #bb86fc;
+    text-decoration: none;
+    padding: 10px;
+    margin: 5px;
+    border-radius: 5px;
+}
+
+.navbar a:hover {
+    background-color: #333;
+}
+
+/* Buttons */
+button {
+    background-color: #bb86fc;
+    color: #121212;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background-color: #9b67f0;
+}
+
+/* Form Styling */
+form {
+    background-color: #1e1e1e;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 5px;
+    background-color: #333;
+    color: #e0e0e0;
+}
+
+input[type="submit"] {
+    background-color: #bb86fc;
+    color: #121212;
+    cursor: pointer;
+}
+
+input[type="submit"]:hover {
+    background-color: #9b67f0;
+}
+
+/* Footer */
+.footer {
+    text-align: center;
+    padding: 10px;
+    margin-top: 20px;
+    color: #888;
+}
+
+body {
+    background-color: #121212;
+    color: #fff;
+    text-align: center;
+}
+
+.container {
+    width: 60%;
+    margin: auto;
+    padding: 20px;
+}
+
+a {
+    color: #4caf50;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.post {
+    border-bottom: 1px solid #333;
+    padding: 10px 0;
+}
+
+.text {
+    font-size: 130%;
+}
+
+/* Forms and Buttons */
+input, textarea {
+    width: 90%;
+    padding: 10px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 5px;
+}
+
+button {
+    background-color: #4caf50;
+    color: white;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    border-radius: 5px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+/* Calendar & Summary Styles */
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    padding: 10px;
+    font-size: 120%;
+}
+
+/* Login & New Post Form */
+.form-container {
+    width: 40%;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #4caf50;
+    border-radius: 10px;
+    background-color: #222;
+}
