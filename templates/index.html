@@ -8,44 +8,12 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 
-    <style>
-        body {
-            background-color: #121212;
-            color: #fff;
-            text-align: center;
-
-        }
-
-        .container {
-            width: 60%;
-            margin: auto;
-            padding: 20px;
-        }
-
-        a {
-            color: #4caf50;
-            text-decoration: none;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-
-        .post {
-            border-bottom: 1px solid #333;
-            padding: 10px 0;
-        }
-
-        .text {
-            font-size: 130%;
-        }
-    </style>
 </head>
 
 <body>
 
     <div class="container">
-        <h1 style="font-size: 400%;">My Blog</h1>
+        <h1 class="title" style="font-size: 400%;">My Blog</h1>
         {% if 'admin' in session %}
         <a href="{{ url_for('new_post') }}">New Post</a>
         <a href="{{ url_for('logout') }}" id="logoutButton" onclick="logoutUser()">Logout</a>
@@ -53,18 +21,16 @@
         <a href="{{ url_for('login') }}" id="loginButton">Login</a>
         {% endif %}
         <hr>
-
-        <hr>
         {% for post in posts %}
         <div class="post">
             <h1 class="Heding">{{ post[1] }}</h1>
 
+            
+            <p class="text">{{ post[2] }}</p>
             {% if post[3] %} <!-- Check if an image exists -->
             <img src="{{ url_for('static', filename='uploads/' + post[3].split('/')[-1]) }}" alt="Post Image"
                 style="max-width: 100%; height: auto; border-radius: 10px;">
             {% endif %}
-
-            <p class="text">{{ post[2] }}</p>
             <small>Posted on {{ post[4] }}</small>
             <br>
         </div>

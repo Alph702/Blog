@@ -1,164 +1,184 @@
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@300;400;700&family=Kalam:wght@300;400;700&display=swap');
 
-@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Kalam:wght@300;400;700&display=swap');
+/* Root Variables */
+:root {
+    /* Colors */
+    --primary-color: #00ff00; /* Hacker Green */
+    --primary-hover: #00cc00; /* Slightly darker green */
+    --background-dark: #000000; /* Pure Black */
+    --background-light: #0a0a0a; /* Very Dark Gray */
+    --navbar-bg: #0f0f0f;
+    --text-color: #ffffff;
+    --border-color: #fffaff;
+    --input-bg: #101010;
+    --input-border: #ececec;
+    --footer-text: #dfe6df;
 
-/* Dark Theme Styling */
+    /* Widths */
+    --container-width: 90%;
+    --form-width: 80%;
+    --max-container-width: 1920px;
+
+    /* Paddings */
+    --container-padding: 20px;
+    --button-padding: 10px 15px;
+    --input-padding: 10px;
+    --navbar-padding: 10px;
+    --footer-padding: 10px;
+
+    /* Border Radius */
+    --border-radius: 10px;
+    --button-radius: 5px;
+
+    /* Font Sizes (Responsive) */
+    --font-small: clamp(0.8rem, 2vw, 1rem);
+    --font-medium: clamp(1rem, 2.5vw, 1.2rem);
+    --font-large: clamp(1.5rem, 3vw, 2rem);
+    --font-xlarge: clamp(2rem, 4vw, 3rem);
+}
+
+/* Global Styles */
 body {
-    background-color: #121212;
-    color: #e0e0e0;
-    font-family: "Comic Neue","Kalam",monospace, serif;
+    background-color: var(--background-dark);
+    color: var(--text-color);
+    font-family: "Comic Neue", "Kalam", monospace, serif;
     margin: 0;
     padding: 0;
+    text-align: center;
+    font-size: var(--font-medium);
 }
 
-/* Centered container */
+/* Title Styling */
+.title {
+    font-family: "Kalam", monospace, serif;
+    color: var(--primary-color);
+    font-size: var(--font-xlarge);
+}
+
+/* Container */
 .container {
-    width: 80%;
-    max-width: 800px;
+    width: var(--container-width);
+    max-width: var(--max-container-width);
     margin: auto;
-    padding: 20px;
+    padding: var(--container-padding);
 }
 
-/* Blog Post Styles */
+.form-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Blog Post */
 .post {
-    background-color: #1e1e1e;
+    background-color: var(--background-light);
     padding: 15px;
     margin-bottom: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 6px rgba(0, 255, 0, 0.3);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .post h2 {
-    color: #bb86fc;
+    color: var(--primary-color);
+    font-size: var(--font-large);
 }
 
 .post p {
     line-height: 1.6;
+    font-size: var(--font-medium);
 }
 
 /* Navigation Bar */
 .navbar {
-    background-color: #1f1f1f;
-    padding: 10px;
+    background-color: var(--navbar-bg);
+    padding: var(--navbar-padding);
     text-align: center;
 }
 
 .navbar a {
-    color: #bb86fc;
+    color: var(--primary-color);
     text-decoration: none;
-    padding: 10px;
+    padding: var(--navbar-padding);
     margin: 5px;
-    border-radius: 5px;
+    border-radius: var(--button-radius);
+    font-size: var(--font-medium);
 }
 
 .navbar a:hover {
-    background-color: #333;
+    background-color: var(--border-color);
 }
 
 /* Buttons */
 button {
-    background-color: #bb86fc;
-    color: #121212;
+    background-color: var(--primary-color);
+    color: var(--background-dark);
     border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
+    padding: var(--button-padding);
+    border-radius: var(--button-radius);
     cursor: pointer;
     transition: 0.3s;
+    width: 100%;
+    font-weight: bold;
+    font-size: var(--font-medium);
 }
 
 button:hover {
-    background-color: #9b67f0;
+    background-color: var(--primary-hover);
 }
 
-/* Form Styling */
+/* Forms & Inputs */
 form {
-    background-color: #1e1e1e;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    background-color: var(--background-light);
+    padding: var(--container-padding);
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 6px rgba(0, 255, 0, 0.3);
+    width: var(--form-width);
+    overflow: hidden;
 }
 
 input, textarea {
-    width: 100%;
-    padding: 10px;
+    width: 90%;
+    padding: var(--input-padding);
     margin: 10px 0;
-    border: none;
-    border-radius: 5px;
-    background-color: #333;
-    color: #e0e0e0;
+    border: 1px solid var(--input-border);
+    border-radius: var(--button-radius);
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    font-size: var(--font-medium);
 }
 
 input[type="submit"] {
-    background-color: #bb86fc;
-    color: #121212;
+    background-color: var(--primary-color);
+    color: var(--background-dark);
     cursor: pointer;
 }
 
 input[type="submit"]:hover {
-    background-color: #9b67f0;
+    background-color: var(--primary-hover);
 }
 
 /* Footer */
 .footer {
     text-align: center;
-    padding: 10px;
+    padding: var(--footer-padding);
     margin-top: 20px;
-    color: #888;
+    color: var(--footer-text);
+    font-size: var(--font-small);
 }
 
-body {
-    background-color: #121212;
-    color: #fff;
-    text-align: center;
-}
-
-.container {
-    width: 60%;
-    margin: auto;
-    padding: 20px;
-}
-
+/* Links */
 a {
-    color: #4caf50;
+    color: var(--primary-color);
     text-decoration: none;
+    font-size: var(--font-medium);
 }
 
 a:hover {
     text-decoration: underline;
 }
 
-.post {
-    border-bottom: 1px solid #333;
-    padding: 10px 0;
-}
-
-.text {
-    font-size: 130%;
-}
-
-/* Forms and Buttons */
-input, textarea {
-    width: 90%;
-    padding: 10px;
-    margin: 10px 0;
-    border: none;
-    border-radius: 5px;
-}
-
-button {
-    background-color: #4caf50;
-    color: white;
-    padding: 10px;
-    border: none;
-    cursor: pointer;
-    width: 100%;
-    border-radius: 5px;
-}
-
-button:hover {
-    background-color: #45a049;
-}
-
-/* Calendar & Summary Styles */
+/* Lists */
 ul {
     list-style: none;
     padding: 0;
@@ -166,15 +186,24 @@ ul {
 
 li {
     padding: 10px;
-    font-size: 120%;
+    font-size: var(--font-medium);
 }
 
-/* Login & New Post Form */
+/* Form Container */
 .form-container {
-    width: 40%;
+    width: var(--form-width);
     margin: auto;
-    padding: 20px;
-    border: 1px solid #4caf50;
-    border-radius: 10px;
-    background-color: #222;
+    padding: var(--container-padding);
+    border: 1px solid var(--primary-color);
+    border-radius: var(--border-radius);
+    background-color: var(--input-bg);
+}
+
+@media screen and (max-width: 600px) {
+    .Heding {
+        font-size: 1.8rem;
+    }
+    .text {
+        font-size: 1.2rem;
+    }
 }
