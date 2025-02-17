@@ -5,6 +5,14 @@ import sqlite3
 import os
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
+from datetime import datetime
+import pytz
+
+def get_local_timestamp():
+    local_tz = pytz.timezone('Asia/Karachi')
+    utc_now = datetime.utcnow().replace(tzinfo=pytz.utc)
+    local_now = utc_now.astimezone(local_tz)
+    return local_now.strftime('%Y-%m-%d %H:%M:%S')
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)  # Generates a secure random key
@@ -102,10 +110,11 @@ def new_post():
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                file.save(filepath)
+                filepath = filepath.replace("\\", "/")  # Ensure correct path formatting
+                file.save(filepath) 
                 image = filepath
-        
-        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+           
+        timestamp = get_local_timestamp()
         
         conn = sqlite3.connect('blog.db')
         c = conn.cursor()

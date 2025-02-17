@@ -86,7 +86,7 @@ body {
 
 .post p {
     line-height: 1.6;
-    font-size: var(--font-medium);
+    font-size: 1.6rem;
 }
 
 /* Navigation Bar */
@@ -198,6 +198,7 @@ li {
     border-radius: var(--border-radius);
     background-color: var(--input-bg);
 }
+
 
 @media screen and (max-width: 600px) {
     .Heding {

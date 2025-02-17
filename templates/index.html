@@ -30,6 +30,7 @@
             {% if post[3] %} <!-- Check if an image exists -->
             <img src="{{ url_for('static', filename='uploads/' + post[3].split('/')[-1]) }}" alt="Post Image"
                 style="max-width: 100%; height: auto; border-radius: 10px;">
+            <br>
             {% endif %}
             <small>Posted on {{ post[4] }}</small>
             <br>
