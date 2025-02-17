@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if post.title %}{{ post.title }}{% else %}My Blog - A Great Post{% endif %}</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <a href="/" class="Back-to-home">
+        <img src="{{ url_for('static', filename='arrow.svg') }}" alt="Back" class="back-image">
+        <samp id="text">Back to Home</samp>
+        
+    </a>
+    <h1>{{ post.title }}</h1>
+    <p><strong>Published:</strong> {{ post.timestamp }}</p>
+    <p>{{ post.content | safe }}</p>
+    {% if post.image %}
+        <img src="{{ url_for('static', filename=post.image.replace('static/', '')) }}" alt="Post Image" class="image" style="width: 90%;">
+    {% endif %}
+    <br>
+</body>
+</html>

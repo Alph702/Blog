@@ -1,3 +1,10 @@
+let Post = document.getElementsByClassName("Post-Container");
+
+Post.addEventListener("click",  ()=>{
+    
+});
+
+
 function checkSession() {
    let isLoggedIn = localStorage.getItem("isLoggedIn"); 
     

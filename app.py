@@ -151,8 +151,29 @@ def set_session():
         session.pop("admin", None)  # Remove admin session
         return jsonify({"message": "Session removed", "admin": False})
 
+@app.route('/post/<int:post_id>')
+def view_post(post_id):
+    conn = sqlite3.connect('blog.db')
+    c = conn.cursor()
+    c.execute("SELECT id, title, content, image, timestamp FROM posts WHERE id = ?", (post_id,))
+    post = c.fetchone()
+    conn.close()
+
+    if post:
+        formatted_timestamp = datetime.strptime(post[4], "%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d %I:%M %p")
+        return render_template('post.html', post={
+            "id": post[0],
+            "title": post[1],
+            "content": Markup(post[2]),
+            "image": post[3],
+            "timestamp": formatted_timestamp
+        }, dark_mode=True)
+    else:
+        return "Post not found", 404
+
+
 if __name__ == '__main__':
     if not os.path.exists(UPLOAD_FOLDER):
         os.makedirs(UPLOAD_FOLDER)
     init_db()
-    app.run(port=8080)
+    app.run(port=8080, debug=True)
