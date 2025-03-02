@@ -293,6 +293,11 @@ li {
     font-weight: bold;
 }
 
+.filter-group option {
+    background: var(--background-dark);
+    color: var(--text-color);
+}
+
 /* Dropdown Styling */
 .filter-group select {
     background-color: var(--input-bg);
@@ -417,17 +422,6 @@ body.filter-active::before {
     }
     to {
         transform: translate(-50%, -50%) rotate(360deg);
-    }
-}
-@media (max-width: 768px) {
-    .filter-panel {
-        width: 100%;
-        max-height: none;
-        padding: 10px;
-    }
-
-    .filter-toggle-btn {
-        width: 100%;
     }
 }
 .filter-reset-btn {
