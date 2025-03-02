@@ -3,10 +3,14 @@
 /* Root Variables */
 :root {
     /* Colors */
-    --primary-color: #00ff00; /* Hacker Green */
-    --primary-hover: #00cc00; /* Slightly darker green */
-    --background-dark: #000000; /* Pure Black */
-    --background-light: #0a0a0a; /* Very Dark Gray */
+    --primary-color: #00ff00;
+    /* Hacker Green */
+    --primary-hover: #00cc00;
+    /* Slightly darker green */
+    --background-dark: #000000;
+    /* Pure Black */
+    --background-light: #0a0a0a;
+    /* Very Dark Gray */
     --navbar-bg: #0f0f0f;
     --text-color: #ffffff;
     --border-color: #fffaff;
@@ -93,7 +97,7 @@ body {
     font-size: 1.6rem;
 }
 
-.post-button{
+.post-button {
     color: var(--text-color);
 }
 
@@ -145,7 +149,8 @@ form {
     overflow: hidden;
 }
 
-input, textarea {
+input,
+textarea {
     width: 90%;
     padding: var(--input-padding);
     margin: 10px 0;
@@ -213,6 +218,7 @@ li {
     .Heding {
         font-size: 1.8rem;
     }
+
     .text {
         font-size: 1.2rem;
     }
@@ -225,7 +231,7 @@ li {
     border-radius: var(--border-radius);
 }
 
-.Back-to-home{
+.Back-to-home {
     position: absolute;
     top: 10px;
     left: 10px;
@@ -233,13 +239,73 @@ li {
     align-items: center;
 }
 
-.back-image{
+.back-image {
     width: 50px;
     height: 50px;
 
 }
 
-#text{
+#text {
     position: relative;
     left: 5px;
 }
+
+.post-button:hover {
+    text-decoration: none;
+
+}
+
+/* Filter Panel Container with Animation */
+.filter-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0px;
+    width: var(--form-width);
+    margin: 0px auto;
+    /* Initially collapsed */
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out, padding 0.5s ease-in-out, margin 0.5s ease-in-out;
+  }
+  
+  /* When the panel is open, expand and fade in */
+  .filter-panel.open {
+    max-height: 500px; /* Adjust if needed */
+    opacity: 1;
+    padding: 20px;
+    margin: 20px auto;
+  }
+  
+  /* Filter Form Groups */
+  .filter-group {
+    margin-bottom: 15px;
+    text-align: left;
+  }
+  
+  /* Label Styling */
+  .filter-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--primary-color);
+    font-weight: bold;
+  }
+  
+  /* Dropdown Styling */
+  .filter-group select {
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    border: 1px solid var(--input-border);
+    padding: var(--input-padding);
+    border-radius: var(--button-radius);
+    font-size: var(--font-medium);
+    width: 100%;
+  }
+  
+  /* Dropdown Focus State */
+  .filter-group select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+  }
+  
