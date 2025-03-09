@@ -198,11 +198,15 @@ def view_post(post_id):
 
     if post:
         formatted_timestamp = post[4]
+        if post[3]:
+            Image = str(post[3]).replace("static/uploads/", "")
+        else:
+            Image = post[3]
         return render_template('post.html', post={
             "id": post[0],
             "title": post[1],
             "content": Markup(post[2]),
-            "image": str(post[3]).replace("static/uploads/", ""),
+            "image": Image,
             "timestamp": formatted_timestamp
         }, dark_mode=True)
     else:
