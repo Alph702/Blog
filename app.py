@@ -202,7 +202,7 @@ def view_post(post_id):
             "id": post[0],
             "title": post[1],
             "content": Markup(post[2]),
-            "image": post[3],
+            "image": str(post[3]).replace("static/uploads/", ""),
             "timestamp": formatted_timestamp
         }, dark_mode=True)
     else:
