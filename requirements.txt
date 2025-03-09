@@ -5,4 +5,3 @@ Werkzeug==2.0.3
 itsdangerous==2.0.1
 click==8.0.3
 python-dotenv==0.19.2
-gunicorn  # Needed for deployment on platforms like Heroku or Railway
