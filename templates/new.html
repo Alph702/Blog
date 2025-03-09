@@ -22,26 +22,31 @@
     <script>
         const editor = document.getElementById("editor");
 
-        editor.addEventListener("input", function (event) {
-            const value = editor.value;
+        editor.addEventListener("keydown", function (event) {
             const cursorPos = editor.selectionStart;
+            const value = editor.value;
 
-            // Detect when user types an opening tag
-            const match = value.substring(0, cursorPos).match(/<([a-zA-Z0-9]+)>$/);
-            if (match) {
-                const tag = match[1];
-                const closingTag = `</${tag}>`;
+            // Handle auto-closing only when typing '>'
+            if (event.key === ">" && cursorPos > 1) {
+                const beforeCursor = value.substring(0, cursorPos);
+                const match = beforeCursor.match(/<([a-zA-Z0-9]+)$/); // Detect opened tag
 
-                // Insert closing tag automatically
-                insertAtCursor(editor, closingTag);
+                if (match) {
+                    event.preventDefault(); // Stop default '>' input
+                    const tag = match[1];
+                    const closingTag = `>${`</${tag}>`}`;
+
+                    // Insert '>' and closing tag, placing cursor in between
+                    editor.value = value.substring(0, cursorPos) + closingTag + value.substring(cursorPos);
+                    editor.selectionStart = editor.selectionEnd = cursorPos + 1;
+                }
+            }
+
+            // Prevent auto-closing when backspacing or deleting
+            if (event.key === "Backspace" || event.key === "Delete") {
+                return;
             }
         });
-
-        function insertAtCursor(field, text) {
-            const startPos = field.selectionStart;
-            const endPos = field.selectionEnd;
-
-            field.value = field.value.substring(0, startPos) + text + field.value.substring(endPos);
-            field.selectionStart = field.selectionEnd = startPos + text.length; // Place cursor after inserted text 
-        }
     </script>
+</body>
+</html>
