@@ -10,16 +10,38 @@
 <body>
     <div class="container form-container">
         <h1>New Post</h1>
-        <!-- Add enctype="multipart/form-data" for file upload -->
-        <form method="POST" enctype="multipart/form-data">
-            <input type="text" name="title" placeholder="Title">
-            <textarea name="content" placeholder="Write your post here..." rows="5" required></textarea>
-            <!-- Image Upload Input -->
-            <input type="file" name="image" accept="image/*">
+        <form method="POST">
+            <input type="text" name="title" placeholder="Title" required>
+            <textarea id="editor" name="content" placeholder="Write your post here..." rows="5" required></textarea>
             <button type="submit">Post</button>
         </form>
         <br>
         <a href="/">Back to Home</a>
     </div>
-</body>
-</html>
+
+    <script>
+        const editor = document.getElementById("editor");
+
+        editor.addEventListener("input", function (event) {
+            const value = editor.value;
+            const cursorPos = editor.selectionStart;
+
+            // Detect when user types an opening tag
+            const match = value.substring(0, cursorPos).match(/<([a-zA-Z0-9]+)>$/);
+            if (match) {
+                const tag = match[1];
+                const closingTag = `</${tag}>`;
+
+                // Insert closing tag automatically
+                insertAtCursor(editor, closingTag);
+            }
+        });
+
+        function insertAtCursor(field, text) {
+            const startPos = field.selectionStart;
+            const endPos = field.selectionEnd;
+
+            field.value = field.value.substring(0, startPos) + text + field.value.substring(endPos);
+            field.selectionStart = field.selectionEnd = startPos + text.length; // Place cursor after inserted text 
+        }
+    </script>
