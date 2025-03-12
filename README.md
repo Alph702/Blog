@@ -29,8 +29,12 @@ Welcome to the **Flask Blog Project**! 🚀 This is a simple blogging platform b
 ```sh
  pip install -r requirements.txt
 ```
+### 4️⃣ Delete test posts
+```sh
+ rm Blog.db
+```
 
-### 4️⃣ Run the Application Locally
+### 5️⃣ Run the Application Locally
 ```sh
  python app.py
 ```
