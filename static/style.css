@@ -214,7 +214,7 @@ li {
 /* Form Container */
 .form-container {
     width: var(--form-width);
-    margin: auto;
+    margin: var(--container-padding) auto;
     padding: var(--container-padding);
     border: 1px solid var(--primary-color);
     border-radius: var(--border-radius);
@@ -257,7 +257,8 @@ li {
 
     /* CSS Noise Effect */
     overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); /* Soft light effect */
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    /* Soft light effect */
 }
 
 .Back-to-home-container::before {
@@ -267,12 +268,17 @@ li {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(255, 255, 255, 0.048); /* Light overlay */
+    background: rgba(255, 255, 255, 0.048);
+    /* Light overlay */
     background-image: radial-gradient(circle, rgba(255, 255, 255, 0.055) 1%, transparent 1%);
-    background-size: 3px 3px; /* Small noisy dots */
-    opacity: 0.2; /* Adjust for intensity */
-    pointer-events: none; /* Make it non-interactive */
-    filter: blur(20px); /* Blurry shadow */
+    background-size: 3px 3px;
+    /* Small noisy dots */
+    opacity: 0.2;
+    /* Adjust for intensity */
+    pointer-events: none;
+    /* Make it non-interactive */
+    filter: blur(20px);
+    /* Blurry shadow */
 }
 
 .Back-to-home {
@@ -484,4 +490,106 @@ body.filter-active::before {
 .filter-reset-btn:hover {
     background-color: var(--primary-color);
     color: var(--background-dark);
+}
+
+.full-screen-button {
+    background-color: var(--background-light);
+    color: var(--primary-color);
+    border: none;
+    padding: 10px;
+    border-radius: 100%;
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: var(--font-medium);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: auto;
+    height: auto;
+    box-shadow: 0 0 10px var(--shadow);
+    position: fixed;
+    right: calc(var(--container-padding) + 10%);
+}
+
+.full-screen-button:hover {
+    background-color: var(--background-light);
+    box-shadow: 0 0 10px var(--hover-shadow);
+    scale: 1.1;
+}
+
+.full-screen-button.full-screen {
+    display: none;
+    visibility: hidden;
+}
+
+.full-screen-button img {
+    width: 20px;
+    height: 20px;
+}
+
+.form.full-screen {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    overflow-y: hidden;
+    padding: 0;
+    margin: 0;
+}
+
+.form button.full-screen {
+    display: none;
+}
+
+.form-text-input.full-screen {
+    display: none;
+    visibility: hidden;
+}
+
+.form-file-input.full-screen {
+    display: none;
+    visibility: hidden;
+}
+
+.editor.full-screen {
+    width: 100%;
+    height: 100%;
+    background-color: var(--background-light);
+    color: var(--primary-color);
+    border: none;
+    font-size: var(--font-medium);
+    padding: 0;
+    margin: 0;
+}
+
+.editor.full-screen:focus {
+    outline: none;
+}
+
+.popup {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 100000;
+}
+
+.show {
+    opacity: 1;
+}
+
+box {
+    border: 1px solid black;
+    padding: 10px;
+    /* margin: 10px; */
 }
