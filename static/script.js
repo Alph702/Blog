@@ -1,8 +1,5 @@
 let Post = document.getElementsByClassName("Post-Container");
 
-Post.addEventListener("click",  ()=>{
-    
-});
 
 
 function checkSession() {

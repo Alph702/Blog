@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,20 +8,33 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='Bg.ico') }}" type="image/x-icon">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
     <div class="container form-container">
-        <h1>New Post</h1>
-        <form method="POST">
-            <input type="text" name="title" placeholder="Title">
-            <textarea id="editor" name="content" placeholder="Write your post here..." rows="5" required></textarea>
-            <input type="file" name="image" accept="image/*">◘
+        <h1 class="new-post-h">New Post</h1>
+        <button class="full-screen-button" onclick="FullScreen()"><img
+                src="{{ url_for('static', filename='full-screen.svg')}}" alt="Full Screen"></button>
+        <form class="form" method="POST">
+            <div id="popup" class="popup">press <box>ESC</box> to exit full screen</div>
+            <input class="form-text-input" type="text" name="title" placeholder="Title">
+            <textarea class="editor" id="editor" name="content" placeholder="Write your post here..." rows="5"
+                required></textarea>
+            <input class="form-file-input" type="file" name="image" accept="image/*">
             <button type="submit">Post</button>
         </form>
+
         <br>
         <a href="/">Back to Home</a>
     </div>
 
     <script>
+        // On page load, check if full-screen mode was enabled
+        window.onload = function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('fullscreen') === 'true') {
+                FullScreen(); // Activate full-screen mode
+            }
+        };
         const editor = document.getElementById("editor");
 
         editor.addEventListener("keydown", function (event) {
@@ -48,6 +62,78 @@
                 return;
             }
         });
+
+        function FullScreen() {
+            // const full_screen_container = document.querySelector(".full-screen-container");
+            const container = document.querySelector(".form");
+            const button = document.querySelector(".form").querySelector("button");
+            const full_screen_button = document.querySelector(".full-screen-button");
+            const form_text_input = document.querySelector(".form-text-input");
+            const editor = document.getElementById("editor");
+            const form_file_input = document.querySelector(".form-file-input");
+            const popup = document.getElementById('popup');
+
+            // full_screen_container.classList.toggle("full-screen");
+            container.classList.toggle("full-screen");
+            button.classList.toggle("full-screen");
+            full_screen_button.classList.toggle("full-screen");
+            form_text_input.classList.toggle("full-screen");
+            form_file_input.classList.toggle("full-screen");
+            editor.classList.toggle("full-screen");
+            if (editor.classList.contains("full-screen")){
+            popup.classList.add('show');
+            }
+            // Update the URL to include fullscreen=true
+            if (container.classList.contains("full-screen")) {
+                window.history.pushState({}, '', '?fullscreen=true');
+            } else {
+                window.history.pushState({}, '', window.location.pathname);
+            }
+
+
+            setTimeout(() => {
+                popup.classList.remove('show');
+            }, 1500); // Show for 1.5 seconds
+        }
+        editor.addEventListener('keydown', function (event) {
+            // console.log(event.key);
+            if (event.shiftKey && event.key === 'Enter') {
+                event.preventDefault(); // Prevents adding a new line
+
+                const content = editor.value;
+                const title = document.querySelector('input[name="title"]').value;
+                const formData = new FormData();
+                formData.append('title', title);
+                formData.append('content', content);
+
+                fetch('/new', {
+                    method: 'POST',
+                    body: formData,
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            console.log('Post submitted successfully.');
+                            if (editor.classList.contains("full-screen")) {
+                                editor.value = '';
+                            } else {
+                                window.location.href = '/new';
+                            }
+                        } else {
+                            alert('Error while submitting the post.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Something went wrong while submitting the post.');
+                    });
+            }
+            if (event.key === 'Escape') {
+                if (editor.classList.contains("full-screen")) {
+                    FullScreen();
+                }
+            }
+        });
     </script>
 </body>
+
 </html>
