@@ -158,7 +158,7 @@ def new_post():
         c.execute("INSERT INTO posts (title, content, image, timestamp) VALUES (?, ?, ?, ?)", (title, content, image, timestamp))
         conn.commit()
         conn.close()
-        return redirect(url_for('home'))
+        return redirect(url_for('new_post'))
 
     return render_template('new.html', dark_mode=True)
 

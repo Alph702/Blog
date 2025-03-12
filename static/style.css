@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@300;400;700&family=Kalam:wght@300;400;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Comic+Neue:wght@300;400;700&family=Kalam:wght@300;400;700&display=swap");
 
 /* Root Variables */
 :root {
@@ -43,6 +43,9 @@
     --font-medium: clamp(1rem, 2.5vw, 1.2rem);
     --font-large: clamp(1.5rem, 3vw, 2rem);
     --font-xlarge: clamp(2rem, 4vw, 3rem);
+
+    --shadow: rgba(0, 255, 0, 0.3);
+    --hover-shadow: rgba(0, 255, 0, 0.5);
 }
 
 /* Global Styles */
@@ -83,7 +86,7 @@ body {
     padding: 15px;
     margin-bottom: 20px;
     border-radius: var(--border-radius);
-    box-shadow: 0 4px 6px rgba(0, 255, 0, 0.3);
+    box-shadow: 0 4px 6px var(--shadow);
     border-bottom: 1px solid var(--border-color);
 }
 
@@ -95,6 +98,12 @@ body {
 .post p {
     line-height: 1.6;
     font-size: 1.6rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .post-button {
@@ -144,7 +153,7 @@ form {
     background-color: var(--background-light);
     padding: var(--container-padding);
     border-radius: var(--border-radius);
-    box-shadow: 0 4px 6px rgba(0, 255, 0, 0.3);
+    box-shadow: 0 4px 6px var(--shadow);
     width: var(--form-width);
     overflow: hidden;
 }
@@ -231,19 +240,50 @@ li {
     border-radius: var(--border-radius);
 }
 
-.Back-to-home {
+.Back-to-home-container {
+    display: flex;
+    width: 100vw;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    position: fixed;
+    bottom: 0;
+    background: #ffffff;
+    background: rgba(255, 255, 255, 0);
+    /* Transparent white background */
+    backdrop-filter: blur(10px);
+    /* Blurs the background behind the element */
+    -webkit-backdrop-filter: blur(10px);
+
+    /* CSS Noise Effect */
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); /* Soft light effect */
+}
+
+.Back-to-home-container::before {
+    content: "";
     position: absolute;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.048); /* Light overlay */
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.055) 1%, transparent 1%);
+    background-size: 3px 3px; /* Small noisy dots */
+    opacity: 0.2; /* Adjust for intensity */
+    pointer-events: none; /* Make it non-interactive */
+    filter: blur(20px); /* Blurry shadow */
+}
+
+.Back-to-home {
     display: flex;
     align-items: center;
+    opacity: 1;
 }
 
 .back-image {
     width: 50px;
     height: 50px;
-
 }
 
 #text {
@@ -253,7 +293,6 @@ li {
 
 .post-button:hover {
     text-decoration: none;
-
 }
 
 /* Filter Panel Container with Animation */
@@ -268,7 +307,8 @@ li {
     max-height: 0;
     opacity: 0;
     overflow: hidden;
-    transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out, padding 0.5s ease-in-out, margin 0.5s ease-in-out;
+    transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out,
+        padding 0.5s ease-in-out, margin 0.5s ease-in-out;
 }
 
 /* When the panel is open, expand and fade in */
@@ -358,7 +398,7 @@ li {
 /* Hover Effect */
 .filter-group select:hover {
     border-color: var(--primary-color);
-    box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+    box-shadow: 0 0 10px var(--hover-shadow);
 }
 
 /* Dropdown Open Animation */
@@ -376,6 +416,7 @@ li {
 .filter-panel.open {
     transform: translateY(0);
 }
+
 body.filter-active::before {
     content: "";
     position: fixed;
@@ -421,10 +462,12 @@ body.filter-active::before {
     from {
         transform: translate(-50%, -50%) rotate(0deg);
     }
+
     to {
         transform: translate(-50%, -50%) rotate(360deg);
     }
 }
+
 .filter-reset-btn {
     background-color: transparent;
     color: var(--primary-color);
