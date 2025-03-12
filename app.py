@@ -93,7 +93,7 @@ def filter_posts():
     conn = sqlite3.connect('blog.db')
     c = conn.cursor()
     c.execute(query, params)
-    posts = [(post[0], post[1], Markup(post[2]), post[3], post[4]) for post in c.fetchall()]
+    posts = [(post[0], post[1], Markup(post[2]), post[3], datetime.strptime(post[4], "%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d %I:%M %p")) for post in c.fetchall()]
 
     # Get available years, months, and days dynamically from the posts
     c.execute("SELECT DISTINCT strftime('%Y', timestamp) as year FROM posts ORDER BY year DESC")
@@ -158,7 +158,7 @@ def new_post():
         c.execute("INSERT INTO posts (title, content, image, timestamp) VALUES (?, ?, ?, ?)", (title, content, image, timestamp))
         conn.commit()
         conn.close()
-        return redirect(url_for('home'))
+        return redirect(url_for('new_post'))
 
     return render_template('new.html', dark_mode=True)
 
@@ -197,7 +197,7 @@ def view_post(post_id):
     conn.close()
 
     if post:
-        formatted_timestamp = post[4]
+        formatted_timestamp = datetime.strptime(post[4], "%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d %I:%M %p")
         if post[3]:
             Image = str(post[3]).replace("static/uploads/", "")
         else:
