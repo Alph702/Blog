@@ -14,11 +14,12 @@
         <h1 class="new-post-h">New Post</h1>
         <button class="full-screen-button" onclick="FullScreen()"><img
                 src="{{ url_for('static', filename='full-screen.svg')}}" alt="Full Screen"></button>
-        <form class="form" method="POST">
+        <form class="form" method="POST" enctype="multipart/form-data">
             <div id="popup" class="popup">press <box>ESC</box> to exit full screen</div>
             <input class="form-text-input" type="text" name="title" placeholder="Title">
             <textarea class="editor" id="editor" name="content" placeholder="Write your post here..." rows="5"
                 required></textarea>
+                <input type="file" name="image" accept="image/*">
             <input class="form-file-input" type="file" name="image" accept="image/*">
             <button type="submit">Post</button>
         </form>

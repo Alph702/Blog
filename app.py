@@ -150,7 +150,6 @@ def new_post():
                 filepath = filepath.replace("\\", "/")  # Ensure correct path formatting
                 file.save(filepath)
                 image = filepath
-
         timestamp = get_local_timestamp()
 
         conn = sqlite3.connect('blog.db')
