@@ -144,7 +144,6 @@ def home():
     Renders the home page, displaying all blog posts and filter options.
     """
     admin_logged_in = session.get('admin', False)
-    print(f"DEBUG: Home route - admin_logged_in: {admin_logged_in}")
     
     # Select fields dynamically based on the resolved TIMESTAMP_FIELD
     
