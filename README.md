@@ -83,7 +83,3 @@ Feel free to fork the repository, submit issues, or contribute to improve this p
 ## License
 This project is open-source and licensed under the **MIT License**.
 
----
-
-Happy Coding! 😊
-

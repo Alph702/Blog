@@ -2,3 +2,7 @@ run.py
 
 GEMINI.md
 .env
+.venv
+.github/
+static/uploads/
+__pycache__/
