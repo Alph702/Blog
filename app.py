@@ -1,7 +1,5 @@
 from datetime import datetime, timedelta
 import os
-from datetime import datetime
-
 import pytz
 import supabase
 from dotenv import load_dotenv
@@ -10,8 +8,7 @@ from flask import Flask, redirect, render_template, request, session, url_for, j
 from markupsafe import Markup
 from werkzeug.utils import secure_filename
 import hashlib
-import secrets
-
+import uuid
 
 def get_local_timestamp():
     # Use timezone-aware UTC (avoid deprecated utcnow()) then convert to local tz
@@ -60,7 +57,12 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # We'll probe a single row and pick the first matching candidate.
 TIMESTAMP_FIELD = None
 
+
 def resolve_timestamp_field():
+    """
+    Dynamically determines the correct timestamp field name in the 'posts' table.
+    Supabase often uses 'created_at', but older schemas might use 'timestamp'.
+    """
     global TIMESTAMP_FIELD
     candidates = ('timestamp', 'created_at', 'published_at', 'posted_at', 'time', 'date', 'ts', 'createdat')
     try:
@@ -86,12 +88,18 @@ def resolve_timestamp_field():
 # Resolve once at startup
 resolve_timestamp_field()
 
+
 def allowed_file(filename):
+    """
+    Checks if a file's extension is allowed for upload.
+    """
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 @app.before_request
 def check_persistent_login():
+    """
+    Middleware to check for a persistent login token (remember_me cookie) before each request."""
     # If admin is already in session, no need to check persistent login
     if 'admin' in session:
         return
@@ -101,25 +109,23 @@ def check_persistent_login():
     if remember_me_token:
         hashed_token = hashlib.sha256(remember_me_token.encode()).hexdigest()
         try:
+            # Query Supabase for the persistent login token
             response = supabase_client.table('persistent_logins').select('*').eq('token', hashed_token).execute()
-            print(f"Supabase response for persistent login: {response.data}")
             
             if response.data and len(response.data) > 0:
                 login_record = response.data[0]
                 expires_at_str = login_record.get('expires_at')
                 if expires_at_str:
                     expires_at = datetime.fromisoformat(expires_at_str)
-                    # Ensure current_utc is timezone-aware for comparison
                     current_utc = datetime.now(pytz.utc)
                     if expires_at > current_utc:
                         session['admin'] = True
-                        session.permanent = True # Re-establish permanent session
-                        print("Persistent login successful!")
+                        session.permanent = True # Extend session permanence
                     else:
-                        print("Persistent token expired. Removing from DB and cookie.")
-                        # Token expired, remove from DB and cookie
+                        # Token expired, delete cookie and redirect
                         response = make_response(redirect(url_for('home')))
                         response.delete_cookie('remember_me')
+                        supabase_client.table('persistent_logins').delete().eq('token', hashed_token).execute() # Clean up expired token
                         return response
             else:
                 # Token not found in DB, clear cookie
@@ -127,14 +133,21 @@ def check_persistent_login():
                 response.delete_cookie('remember_me')
                 return response
         except Exception as e:
+            # Log any errors during persistent login check
             print(f"Error checking persistent login: {e}")
+            return redirect(url_for('home'))
 
 
 @app.route('/')
 def home():
+    """
+    Renders the home page, displaying all blog posts and filter options.
+    """
     admin_logged_in = session.get('admin', False)
+    print(f"DEBUG: Home route - admin_logged_in: {admin_logged_in}")
     
-    # Fetch posts from Supabase. Use the detected TIMESTAMP_FIELD when present.
+    # Select fields dynamically based on the resolved TIMESTAMP_FIELD
+    
     select_fields = f"id, title, content, image, {TIMESTAMP_FIELD}" if TIMESTAMP_FIELD else "id, title, content, image"
     try:
         response = supabase_client.table('posts').select(select_fields).order(TIMESTAMP_FIELD if TIMESTAMP_FIELD else 'id', desc=True).execute()
@@ -147,6 +160,7 @@ def home():
 
     posts = []
     for post in posts_data:
+        # Parse and format the timestamp for display
         ts_value = post.get(TIMESTAMP_FIELD) if TIMESTAMP_FIELD else None
         if ts_value:
             try:
@@ -159,8 +173,6 @@ def home():
 
         posts.append((post.get('id'), post.get('title'), Markup(post.get('content', '')), post.get('image'), formatted_timestamp))
     
-    # Get available years, months, and days dynamically from the posts
-    # This part might need adjustment based on how you store/query dates in Superbase
     # For now, let's assume we can extract them from the fetched posts or query distinct values if needed.
     
     # Fetch distinct years/months/days using the detected timestamp field. If no value present, leave lists empty.
@@ -192,6 +204,9 @@ def home():
 
 @app.route('/filter', methods=['GET'])
 def filter_posts():
+    """
+    Filters blog posts based on year, month, and day provided in query parameters.
+    """
     # Get filter parameters
     year = request.args.get('year', 'any')
     month = request.args.get('month', 'any')
@@ -203,6 +218,7 @@ def filter_posts():
         response = supabase_client.table('posts').select(select_fields).order('id', desc=True).execute()
         posts_data = response.data or []
     else:
+        # Build the Supabase query with date range filters
         query = supabase_client.table('posts').select(select_fields)
 
         if year != 'any':
@@ -234,6 +250,7 @@ def filter_posts():
 
             query = query.gte(TIMESTAMP_FIELD, f"{current_year}-{current_month.zfill(2)}-{day.zfill(2)}T00:00:00Z").lt(TIMESTAMP_FIELD, f"{current_year}-{current_month.zfill(2)}-{str(next_day).zfill(2)}T00:00:00Z")
 
+
         try:
             response = query.order(TIMESTAMP_FIELD, desc=True).execute()
             posts_data = response.data or []
@@ -244,6 +261,7 @@ def filter_posts():
 
     posts = []
     for post in posts_data:
+        # Parse and format the timestamp for display
         ts_value = post.get(TIMESTAMP_FIELD) if TIMESTAMP_FIELD else None
         if ts_value:
             try:
@@ -287,6 +305,11 @@ def filter_posts():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """
+    Handles user login, including "remember me" functionality.
+    """
+    ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME')
+    ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD')
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -295,36 +318,36 @@ def login():
             session['admin'] = True
             response = make_response(redirect(url_for('home')))
 
+            # If "remember me" is checked, create a persistent login token
             if remember:
-                # Generate a secure token
-                token = secrets.token_urlsafe(32)
-                # Hash the token for database storage
+                token = str(uuid.uuid4())
                 hashed_token = hashlib.sha256(token.encode()).hexdigest()
                 
-                # Set expiration for the token (e.g., 30 days)
                 expires_at = datetime.now(pytz.utc) + timedelta(days=30)
 
+                # Store the hashed token in Supabase and set a cookie
                 try:
-                    # Store the hashed token in Supabase
                     supabase_client.table('persistent_logins').insert({
-                        'user_id': 'admin', # For now, a fixed user_id for the admin
+                        'user_id': 'admin',
                         'token': hashed_token,
                         'expires_at': expires_at.isoformat()
                     }).execute()
-                    
-                    # Set the token as an HTTP-only cookie
-                    # For local development on HTTP, secure=False is necessary
-                    print("Persistent login cookie set.")
+                    response.set_cookie('remember_me', token, max_age=30 * 24 * 60 * 60)  # 30 days
                 except Exception as e:
+                    # Log any errors during persistent login setup
                     print(f"Error setting persistent login: {e}")
-                return response
+                    return response
+            return response
         else:
-            return render_template('login.html', error='Invalid credentials')
-
+                return render_template('login.html', error='Invalid credentials')
+            
     return render_template('login.html')
 
 @app.route('/logout')
 def logout():
+    """
+    Handles user logout, clearing session and persistent login tokens.
+    """
     # Remove admin session
     session.pop('admin', None)
 
@@ -334,17 +357,20 @@ def logout():
     if remember_me_token:
         hashed_token = hashlib.sha256(remember_me_token.encode()).hexdigest()
         try:
+            # Delete the token from Supabase
             supabase_client.table('persistent_logins').delete().eq('token', hashed_token).execute()
         except Exception as e:
             print(f"Error deleting persistent login token from DB: {e}")
 
     response = make_response(redirect(url_for('home')))
     response.delete_cookie('remember_me')
-    print("Logout: Remember Me cookie deleted.")
     return response
 
 @app.route('/new', methods=['GET', 'POST'])
 def new_post():
+    """
+    Allows an authenticated admin to create a new blog post.
+    """
     if 'admin' not in session:
         return redirect(url_for('login'))
 
@@ -365,6 +391,7 @@ def new_post():
                     file_bytes = None
 
                 if file_bytes:
+                    # Attempt to upload image to Supabase Storage
                     # Upload image to Supabase Storage
                     try:
                         response = supabase_client.storage.from_(BLOG_IMAGES_BUCKET).upload(filename, file_bytes, {"content-type": file.content_type})
@@ -372,6 +399,7 @@ def new_post():
                     except Exception as e:
                         # If the remote bucket doesn't exist or upload isn't permitted for the anon key,
                         # fall back to saving the file locally for development convenience.
+                        # This fallback is primarily for local testing without a fully configured Supabase Storage.
                         print(f"Error uploading image to Superbase: {e}")
                         try:
                             os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -386,11 +414,12 @@ def new_post():
                             image_url = None
                 
 
+        # Get the current local timestamp for the post
         timestamp = get_local_timestamp()
 
         # Insert post data into Supabase
         try:
-            # Enhanced duplicate detection: prefer matching title+content (trimmed), fallback to title-only
+            # Enhanced duplicate detection: prefer matching title+content (trimmed), fallback to title-only.
             existing = []
             trimmed_content = (content or '').strip()
             try:
@@ -416,7 +445,8 @@ def new_post():
             if existing:
                 print(f"Skipping insert: post appears to already exist (id={existing[0].get('id')})")
             else:
-                # Compute a new id as MAX(id) + 1 and insert with that id.
+                # Compute a new id as MAX(id) + 1 and insert with that id. This approach is used
+                # because Supabase's auto-incrementing IDs might not always be sequential or easily predictable for client-side generation.
                 # This is inherently racy in concurrent environments; retry a few times if a duplicate-key occurs.
                 max_attempts = 5
                 attempt = 0
@@ -424,7 +454,7 @@ def new_post():
                 while attempt < max_attempts and not inserted:
                     try:
                         # get current max id
-                        max_resp = supabase_client.table('posts').select('id').order('id', desc=True).limit(1).execute()
+                        max_resp = supabase_client.table('posts').select('id').order('id', desc=True).limit(1).execute() # Query for the current maximum ID
                         max_rows = max_resp.data or []
                         current_max = int(max_rows[0].get('id')) if max_rows and max_rows[0].get('id') is not None else 0
                         new_id = current_max + 1
@@ -458,6 +488,9 @@ def new_post():
 
 @app.route('/delete/<int:post_id>')
 def delete_post(post_id):
+    """
+    Allows an authenticated admin to delete a blog post by its ID.
+    """
     if 'admin' not in session:
         return redirect(url_for('login'))
 
@@ -470,20 +503,32 @@ def delete_post(post_id):
 
 @app.route('/check_session')
 def check_session():
+    """
+    API endpoint to check if the admin is currently logged in.
+    """
     return jsonify({"admin": session.get("admin", True)})
 
 @app.route('/set_session', methods=['POST'])
 def set_session():
+    """
+    API endpoint to manually set or remove the admin session.
+    This is primarily for testing or specific admin actions, not typical user flow.
+    """
     data = request.json  # Get JSON data from JavaScript
     if data.get("admin") == True:
         session["admin"] = True  # Set admin session
         return jsonify({"message": "Session updated", "admin": True})
     else:
+        # If 'admin' is false or not provided, remove the admin session.
+        # This acts as a programmatic logout.
         session.pop("admin", None)  # Remove admin session
         return jsonify({"message": "Session removed", "admin": False})
 
 @app.route('/post/<int:post_id>')
 def view_post(post_id):
+    """
+    Renders an individual blog post by its ID.
+    """
     select_fields = f"id, title, content, image, {TIMESTAMP_FIELD}" if TIMESTAMP_FIELD else 'id, title, content, image'
     response = supabase_client.table('posts').select(select_fields).eq('id', post_id).single().execute()
     post = response.data
@@ -498,7 +543,7 @@ def view_post(post_id):
             except Exception:
                 formatted_timestamp = str(ts_val)
 
-        # Image URL is directly from Supabase, no need for local path manipulation
+        # Image URL is directly from Supabase Storage or local fallback, no need for local path manipulation here.
         image_url = post.get('image')
         return render_template('post.html', post={
             "id": post.get('id'),
@@ -513,6 +558,9 @@ def view_post(post_id):
 
 @app.route('/admin/inspect')
 def admin_inspect():
+    """
+    An admin-only diagnostic endpoint to inspect the Supabase configuration and basic data.
+    """
     # Admin-only diagnostic endpoint to check which Supabase instance the app is talking to
     if 'admin' not in session:
         return jsonify({'error': 'admin only'}), 403
@@ -531,7 +579,7 @@ def admin_inspect():
 
     # Get max id as seen by this client
     try:
-        resp = supabase_client.table('posts').select('id').order('id', desc=True).limit(1).execute()
+        resp = supabase_client.table('posts').select('id').order('id', desc=True).limit(1).execute() # Query for the maximum post ID
         max_id = None
         if resp and resp.data and len(resp.data) > 0:
             max_id = resp.data[0].get('id')
@@ -541,7 +589,7 @@ def admin_inspect():
 
     # Get total number of posts (lightweight)
     try:
-        resp2 = supabase_client.table('posts').select('id').execute()
+        resp2 = supabase_client.table('posts').select('id').execute() # Query for all post IDs to count them
         info['posts_count_seen_by_app'] = len(resp2.data or [])
     except Exception as e:
         info['posts_count_error'] = str(e)
@@ -550,6 +598,9 @@ def admin_inspect():
 
 
 if __name__ == '__main__':
+    """
+    Main entry point for running the Flask application.
+    """
     try:
         port = int(os.getenv('PORT', 8080))
         host = os.getenv('HOST', '127.0.0.1')
