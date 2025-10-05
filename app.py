@@ -1,6 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
-from markupsafe import Markup
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 from datetime import datetime
 
@@ -8,9 +6,11 @@ import pytz
 import supabase
 from dotenv import load_dotenv
 from dateutil import parser
-from flask import Flask, redirect, render_template, request, session, url_for, jsonify
+from flask import Flask, redirect, render_template, request, session, url_for, jsonify, make_response
 from markupsafe import Markup
 from werkzeug.utils import secure_filename
+import hashlib
+import secrets
 
 
 def get_local_timestamp():
@@ -23,6 +23,7 @@ def get_local_timestamp():
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)  # Generates a secure random key
+app.permanent_session_lifetime = timedelta(days=30) # Session lasts for 30 days
 
 load_dotenv()
 
@@ -87,6 +88,46 @@ resolve_timestamp_field()
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@app.before_request
+def check_persistent_login():
+    # If admin is already in session, no need to check persistent login
+    if 'admin' in session:
+        return
+
+    remember_me_token = request.cookies.get('remember_me')
+
+    if remember_me_token:
+        hashed_token = hashlib.sha256(remember_me_token.encode()).hexdigest()
+        try:
+            response = supabase_client.table('persistent_logins').select('*').eq('token', hashed_token).execute()
+            print(f"Supabase response for persistent login: {response.data}")
+            
+            if response.data and len(response.data) > 0:
+                login_record = response.data[0]
+                expires_at_str = login_record.get('expires_at')
+                if expires_at_str:
+                    expires_at = datetime.fromisoformat(expires_at_str)
+                    # Ensure current_utc is timezone-aware for comparison
+                    current_utc = datetime.now(pytz.utc)
+                    if expires_at > current_utc:
+                        session['admin'] = True
+                        session.permanent = True # Re-establish permanent session
+                        print("Persistent login successful!")
+                    else:
+                        print("Persistent token expired. Removing from DB and cookie.")
+                        # Token expired, remove from DB and cookie
+                        response = make_response(redirect(url_for('home')))
+                        response.delete_cookie('remember_me')
+                        return response
+            else:
+                # Token not found in DB, clear cookie
+                response = make_response(redirect(url_for('home')))
+                response.delete_cookie('remember_me')
+                return response
+        except Exception as e:
+            print(f"Error checking persistent login: {e}")
 
 
 @app.route('/')
@@ -249,11 +290,34 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-
         if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
-            session.permanent = True  # Makes the session last beyond browser close
+            remember = request.form.get('remember')
             session['admin'] = True
-            return redirect(url_for('home'))
+            response = make_response(redirect(url_for('home')))
+
+            if remember:
+                # Generate a secure token
+                token = secrets.token_urlsafe(32)
+                # Hash the token for database storage
+                hashed_token = hashlib.sha256(token.encode()).hexdigest()
+                
+                # Set expiration for the token (e.g., 30 days)
+                expires_at = datetime.now(pytz.utc) + timedelta(days=30)
+
+                try:
+                    # Store the hashed token in Supabase
+                    supabase_client.table('persistent_logins').insert({
+                        'user_id': 'admin', # For now, a fixed user_id for the admin
+                        'token': hashed_token,
+                        'expires_at': expires_at.isoformat()
+                    }).execute()
+                    
+                    # Set the token as an HTTP-only cookie
+                    # For local development on HTTP, secure=False is necessary
+                    print("Persistent login cookie set.")
+                except Exception as e:
+                    print(f"Error setting persistent login: {e}")
+                return response
         else:
             return render_template('login.html', error='Invalid credentials')
 
@@ -261,8 +325,23 @@ def login():
 
 @app.route('/logout')
 def logout():
-    session.pop('admin', None)  # Remove admin session
-    return redirect(url_for('home'))
+    # Remove admin session
+    session.pop('admin', None)
+
+    # Delete persistent login token from DB and cookie
+    remember_me_token = request.cookies.get('remember_me')
+
+    if remember_me_token:
+        hashed_token = hashlib.sha256(remember_me_token.encode()).hexdigest()
+        try:
+            supabase_client.table('persistent_logins').delete().eq('token', hashed_token).execute()
+        except Exception as e:
+            print(f"Error deleting persistent login token from DB: {e}")
+
+    response = make_response(redirect(url_for('home')))
+    response.delete_cookie('remember_me')
+    print("Logout: Remember Me cookie deleted.")
+    return response
 
 @app.route('/new', methods=['GET', 'POST'])
 def new_post():
