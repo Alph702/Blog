@@ -395,20 +395,23 @@ def new_post():
                     # Upload image to Supabase Storage
                     try:
                         response = supabase_client.storage.from_(BLOG_IMAGES_BUCKET).upload(filename, file_bytes, {"content-type": file.content_type})
-                        image_url = f"{SUPABASE_URL}/storage/v1/object/public/{BLOG_IMAGES_BUCKET}/{filename}"
+                        image_url = f"{SUPABASE_URL}/storage/v1/object/public/{BLOG_IMAGES_BUCKET}/public/{filename}"
                     except Exception as e:
                         # If the remote bucket doesn't exist or upload isn't permitted for the anon key,
                         # fall back to saving the file locally for development convenience.
                         # This fallback is primarily for local testing without a fully configured Supabase Storage.
-                        print(f"Error uploading image to Superbase: {e}")
+                        print(f"Error uploading image to Superbase: {e}")                  
                         try:
-                            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-                            local_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                            with open(local_path, 'wb') as out_f:
-                                out_f.write(file_bytes)
-                            # Use a static URL path for local development
-                            image_url = f"/static/uploads/{filename}"
-                            print(f"Saved image locally to {local_path}; using {image_url} as image URL")
+                            if e.statusCode == 409:
+                                image_url = f"{SUPABASE_URL}/storage/v1/object/public/{BLOG_IMAGES_BUCKET}/public/{filename}"
+                            else:
+                                os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+                                local_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                                with open(local_path, 'wb') as out_f:
+                                    out_f.write(file_bytes)
+                                # Use a static URL path for local development
+                                image_url = f"/static/uploads/{filename}"
+                                print(f"Saved image locally to {local_path}; using {image_url} as image URL")
                         except Exception as e2:
                             print(f"Failed to save image locally: {e2}")
                             image_url = None
