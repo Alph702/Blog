@@ -419,61 +419,35 @@ def new_post():
 
         # Insert post data into Supabase
         try:
-            # Enhanced duplicate detection: prefer matching title+content (trimmed), fallback to title-only.
-            existing = []
-            trimmed_content = (content or '').strip()
-            try:
-                # Try to find exact title+content match
-                existing_resp = supabase_client.table('posts').select('id, content').eq('title', title).limit(5).execute()
-                candidates = existing_resp.data or []
-                for c in candidates:
-                    c_content = (c.get('content') or '').strip()
-                    if c_content == trimmed_content:
-                        existing = [c]
-                        break
-            except Exception:
-                existing = []
-
-            if not existing:
+            # Compute a new id as MAX(id) + 1 and insert with that id. This approach is used
+            # because Supabase's auto-incrementing IDs might not always be sequential or easily predictable for client-side generation.
+            # This is inherently racy in concurrent environments; retry a few times if a duplicate-key occurs.
+            max_attempts = 5
+            attempt = 0
+            inserted = False
+            while attempt < max_attempts and not inserted:
                 try:
-                    # Fallback: match by title only
-                    existing_resp = supabase_client.table('posts').select('id').eq('title', title).limit(1).execute()
-                    existing = existing_resp.data or []
-                except Exception:
-                    existing = []
+                    # get current max id
+                    max_resp = supabase_client.table('posts').select('id').order('id', desc=True).limit(1).execute() # Query for the current maximum ID
+                    max_rows = max_resp.data or []
+                    current_max = int(max_rows[0].get('id')) if max_rows and max_rows[0].get('id') is not None else 0
+                    new_id = current_max + 1
 
-            if existing:
-                print(f"Skipping insert: post appears to already exist (id={existing[0].get('id')})")
-            else:
-                # Compute a new id as MAX(id) + 1 and insert with that id. This approach is used
-                # because Supabase's auto-incrementing IDs might not always be sequential or easily predictable for client-side generation.
-                # This is inherently racy in concurrent environments; retry a few times if a duplicate-key occurs.
-                max_attempts = 5
-                attempt = 0
-                inserted = False
-                while attempt < max_attempts and not inserted:
-                    try:
-                        # get current max id
-                        max_resp = supabase_client.table('posts').select('id').order('id', desc=True).limit(1).execute() # Query for the current maximum ID
-                        max_rows = max_resp.data or []
-                        current_max = int(max_rows[0].get('id')) if max_rows and max_rows[0].get('id') is not None else 0
-                        new_id = current_max + 1
-
-                        supabase_client.table('posts').insert({'id': new_id, 'title': title, 'content': content, 'image': image_url, 'timestamp': timestamp}).execute()
-                        print(f"Inserted post with id={new_id}")
-                        inserted = True
-                    except Exception as e:
-                        err_s = str(e)
-                        # If duplicate-key, another concurrent inserter grabbed the id; retry
-                        if '23505' in err_s or 'duplicate key' in err_s.lower():
-                            attempt += 1
-                            print(f"Duplicate id conflict on insert (attempt {attempt}), retrying...")
-                            continue
-                        else:
-                            print(f"Error inserting post into Superbase: {e}")
-                            break
-                if not inserted:
-                    print("Failed to insert post after retries; skipping.")
+                    supabase_client.table('posts').insert({'id': new_id, 'title': title, 'content': content, 'image': image_url, 'timestamp': timestamp}).execute()
+                    print(f"Inserted post with id={new_id}")
+                    inserted = True
+                except Exception as e:
+                    err_s = str(e)
+                    # If duplicate-key, another concurrent inserter grabbed the id; retry
+                    if '23505' in err_s or 'duplicate key' in err_s.lower():
+                        attempt += 1
+                        print(f"Duplicate id conflict on insert (attempt {attempt}), retrying...")
+                        continue
+                    else:
+                        print(f"Error inserting post into Superbase: {e}")
+                        break
+            if not inserted:
+                print("Failed to insert post after retries; skipping.")
         except Exception as e:
             # Handle duplicate-key gracefully (Postgres error code 23505). For other errors, just log.
             err_s = str(e)
