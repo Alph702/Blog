@@ -394,7 +394,7 @@ def new_post():
                     # Upload image to Supabase Storage
                     try:
                         response = supabase_client.storage.from_(BLOG_IMAGES_BUCKET).upload(filename, file_bytes, {"content-type": file.content_type})
-                        image_url = f"{SUPABASE_URL}/storage/v1/object/public/{BLOG_IMAGES_BUCKET}/public/{filename}"
+                        image_url = f"{SUPABASE_URL}/storage/v1/object/public/{BLOG_IMAGES_BUCKET}/{filename}"
                     except Exception as e:
                         # If the remote bucket doesn't exist or upload isn't permitted for the anon key,
                         # fall back to saving the file locally for development convenience.
@@ -402,7 +402,7 @@ def new_post():
                         print(f"Error uploading image to Superbase: {e}")                  
                         try:
                             if e.statusCode == 409:
-                                image_url = f"{SUPABASE_URL}/storage/v1/object/public/{BLOG_IMAGES_BUCKET}/public/{filename}"
+                                image_url = f"{SUPABASE_URL}/storage/v1/object/public/{BLOG_IMAGES_BUCKET}/{filename}"
                             else:
                                 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
                                 local_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
