@@ -4,7 +4,7 @@ import pytz
 import supabase
 from dotenv import load_dotenv
 from dateutil import parser
-from flask import Flask, redirect, render_template, request, session, url_for, jsonify, make_response
+from flask import Flask, redirect, render_template, request, session, url_for, jsonify, make_response, flash 
 from markupsafe import Markup
 from werkzeug.utils import secure_filename
 import hashlib
@@ -450,6 +450,8 @@ def new_post():
                         break
             if not inserted:
                 print("Failed to insert post after retries; skipping.")
+            else:
+                flash('Post created successfully!', 'success')
         except Exception as e:
             # Handle duplicate-key gracefully (Postgres error code 23505). For other errors, just log.
             err_s = str(e)
@@ -525,10 +527,12 @@ def edit_post(post_id):
         # Update post data in Supabase
         try:
             supabase_client.table('posts').update({'title': title, 'content': content, 'image': image_url}).eq('id', post_id).execute()
+            flash('Post updated successfully!', 'success') # Add this line
             return redirect(url_for('home'))
         except Exception as e:
             print(f"Error updating post in Supabase: {e}")
             # Optionally, add a flash message for error
+            flash('Failed to update post.', 'error')
             return render_template('edit.html', post=request.form, error="Failed to update post.", dark_mode=True)
 
     # GET request: Fetch post data and render form

@@ -1,3 +1,4 @@
+{% from 'components/toast.html' import toast %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -11,6 +12,15 @@
 </head>
 
 <body>
+    <div class="toast-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    {{ toast(message, category) }}
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
     <div class="container Post-Container">
         <h1 class="title" style="font-size: 400%;">My Blog</h1>
         {% if 'admin' in session %}

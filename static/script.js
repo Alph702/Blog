@@ -3,14 +3,14 @@ let Post = document.getElementsByClassName("Post-Container");
 
 
 function checkSession() {
-   let isLoggedIn = localStorage.getItem("isLoggedIn"); 
-    
+    let isLoggedIn = localStorage.getItem("isLoggedIn");
+
     if (isLoggedIn === "true") {
         console.log("✅ User is logged in as admin");
-       setAdminSession()
+        setAdminSession()
     } else {
         console.log("❌ User is NOT logged in");
-        
+
     }
 }
 
@@ -54,3 +54,27 @@ function logoutUser() {
 }
 
 // Run on page load
+
+// Toast Notification
+document.addEventListener('DOMContentLoaded', () => {
+    const toasts = document.querySelectorAll('.toast');
+    toasts.forEach(toast => {
+        // Make toast visible immediately (no smooth animation due to current CSS)
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+        // Auto-dismiss after 4 seconds
+        setTimeout(() => {
+            if (document.body.contains(toast)) {
+                toast.remove();
+            }
+        }, 4000);
+
+        // Manual dismissal via close button
+        const closeButton = toast.querySelector('.close');
+        if (closeButton) {
+            closeButton.addEventListener('click', () => {
+                toast.remove();
+            });
+        }
+    });
+});
