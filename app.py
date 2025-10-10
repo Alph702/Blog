@@ -477,6 +477,70 @@ def delete_post(post_id):
 
     return redirect(url_for('home'))
 
+
+@app.route('/edit/<int:post_id>', methods=['GET', 'POST'])
+def edit_post(post_id):
+    """
+    Allows an authenticated admin to edit an existing blog post.
+    Displays a form pre-filled with the post's current data (GET request).
+    Handles form submission to update the post (POST request).
+    """
+    if 'admin' not in session:
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        title = request.form['title']
+        content = request.form['content']
+        current_image_url = request.form.get('current_image_url') # Hidden field for existing image
+        image_url = current_image_url
+
+        if 'image' in request.files:
+            file = request.files['image']
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                try:
+                    file_bytes = file.read()
+                except Exception as e:
+                    print(f"Failed to read uploaded file into memory: {e}")
+                    file_bytes = None
+
+                if file_bytes:
+                    try:
+                        # Upload new image to Supabase Storage
+                        supabase_client.storage.from_(BLOG_IMAGES_BUCKET).upload(filename, file_bytes, {"content-type": file.content_type})
+                        image_url = f"{SUPABASE_URL}/storage/v1/object/public/{BLOG_IMAGES_BUCKET}/{filename}"
+                    except Exception as e:
+                        print(f"Error uploading new image to Supabase: {e}")
+                        if hasattr(e, 'statusCode') and e.statusCode == 409: # Conflict, file already exists
+                            image_url = f"{SUPABASE_URL}/storage/v1/object/public/{BLOG_IMAGES_BUCKET}/{filename}"
+                        else:
+                            # Fallback to local storage if Supabase upload fails
+                            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+                            local_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                            with open(local_path, 'wb') as out_f:
+                                out_f.write(file_bytes)
+                            image_url = f"/static/uploads/{filename}"
+                            print(f"Saved image locally to {local_path}; using {image_url} as image URL")
+
+        # Update post data in Supabase
+        try:
+            supabase_client.table('posts').update({'title': title, 'content': content, 'image': image_url}).eq('id', post_id).execute()
+            return redirect(url_for('home'))
+        except Exception as e:
+            print(f"Error updating post in Supabase: {e}")
+            # Optionally, add a flash message for error
+            return render_template('edit.html', post=request.form, error="Failed to update post.", dark_mode=True)
+
+    # GET request: Fetch post data and render form
+    select_fields = f"id, title, content, image, {TIMESTAMP_FIELD}" if TIMESTAMP_FIELD else 'id, title, content, image'
+    response = supabase_client.table('posts').select(select_fields).eq('id', post_id).single().execute()
+    post = response.data
+
+    if post:
+        return render_template('edit.html', post=post, dark_mode=True)
+    else:
+        return "Post not found", 404
+
 @app.route('/check_session')
 def check_session():
     """
