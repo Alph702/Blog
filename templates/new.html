@@ -42,7 +42,7 @@
         window.onload = function () {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('fullscreen') === 'true') {
-                FullScreen(); // Activate full-screen mode
+                FullScreen();
             }
         };
         const editor = document.getElementById("editor");
@@ -54,27 +54,24 @@
             // Handle auto-closing only when typing '>'
             if (event.key === ">" && cursorPos > 1) {
                 const beforeCursor = value.substring(0, cursorPos);
-                const match = beforeCursor.match(/<([a-zA-Z0-9]+)$/); // Detect opened tag
+                const match = beforeCursor.match(/<([a-zA-Z0-9]+)$/);
 
                 if (match) {
-                    event.preventDefault(); // Stop default '>' input
+                    event.preventDefault();
                     const tag = match[1];
                     const closingTag = `>${`</${tag}>`}`;
 
-                    // Insert '>' and closing tag, placing cursor in between
                     editor.value = value.substring(0, cursorPos) + closingTag + value.substring(cursorPos);
                     editor.selectionStart = editor.selectionEnd = cursorPos + 1;
                 }
             }
 
-            // Prevent auto-closing when backspacing or deleting
             if (event.key === "Backspace" || event.key === "Delete") {
                 return;
             }
         });
 
         function FullScreen() {
-            // const full_screen_container = document.querySelector(".full-screen-container");
             const container = document.querySelector(".form");
             const button = document.querySelector(".form").querySelector("button");
             const full_screen_button = document.querySelector(".full-screen-button");
@@ -83,7 +80,6 @@
             const form_file_input = document.querySelector(".form-file-input");
             const popup = document.getElementById('popup');
 
-            // full_screen_container.classList.toggle("full-screen");
             container.classList.toggle("full-screen");
             button.classList.toggle("full-screen");
             full_screen_button.classList.toggle("full-screen");
@@ -93,7 +89,6 @@
             if (editor.classList.contains("full-screen")){
             popup.classList.add('show');
             }
-            // Update the URL to include fullscreen=true
             if (container.classList.contains("full-screen")) {
                 window.history.pushState({}, '', '?fullscreen=true');
             } else {
@@ -103,12 +98,11 @@
 
             setTimeout(() => {
                 popup.classList.remove('show');
-            }, 1500); // Show for 1.5 seconds
+            }, 1500);
         }
         editor.addEventListener('keydown', function (event) {
-            // console.log(event.key);
             if (event.shiftKey && event.key === 'Enter') {
-                event.preventDefault(); // Prevents adding a new line
+                event.preventDefault();
 
                 const content = editor.value;
                 const title = document.querySelector('input[name="title"]').value;

@@ -30,9 +30,7 @@
         <a href="{{ url_for('login') }}" id="loginButton">Login</a>
         {% endif %}
 
-        <!-- Filter Toggle Button -->
         <button id="toggleFilterBtn" onclick="toggleFilter()">Show Filter Options</button>
-        <!-- Filter Panel -->
         <div id="filterPanel" class="filter-panel">
             <form method="GET" action="{{ url_for('filter_posts') }}" class="filter-form">
                 <div class="filter-group">
