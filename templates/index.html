@@ -1,3 +1,4 @@
+{% from 'components/toast.html' import toast %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -11,6 +12,15 @@
 </head>
 
 <body>
+    <div class="toast-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    {{ toast(message, category) }}
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
     <div class="container Post-Container">
         <h1 class="title" style="font-size: 400%;">My Blog</h1>
         {% if 'admin' in session %}
@@ -20,9 +30,7 @@
         <a href="{{ url_for('login') }}" id="loginButton">Login</a>
         {% endif %}
 
-        <!-- Filter Toggle Button -->
         <button id="toggleFilterBtn" onclick="toggleFilter()">Show Filter Options</button>
-        <!-- Filter Panel -->
         <div id="filterPanel" class="filter-panel">
             <form method="GET" action="{{ url_for('filter_posts') }}" class="filter-form">
                 <div class="filter-group">
@@ -71,6 +79,7 @@
                 <small>Posted on {{ post[4] }}</small>
                 <br>
                 {% if 'admin' in session %}
+                <a style="padding-right: 5px;" href="{{ url_for('edit_post', post_id=post[0]) }}">Edit</a>
                 <a href="{{ url_for('delete_post', post_id=post[0]) }}">Delete</a>
                 {% endif %}
             </div>

@@ -1,12 +1,11 @@
 Flask
 python-dotenv
-psycopg2-binary # For Supabase, if using Postgres
-supabase # Supabase Python client
+psycopg2-binary
+supabase
 Werkzeug
 requests
 python-dateutil
 pytz
 
-# For testing
 pytest
 pytest-playwright
