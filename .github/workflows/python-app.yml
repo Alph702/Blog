@@ -35,7 +35,7 @@ jobs:
 
       - name: Install Playwright browsers
         run: |
-          playwright install --with-deps chromium
+          uv run playwright install --with-deps chromium
 
       - name: Lint with flake8
         run: |
