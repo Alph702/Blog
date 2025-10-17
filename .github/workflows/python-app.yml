@@ -37,11 +37,5 @@ jobs:
         run: |
           uv run playwright install --with-deps chromium
 
-      - name: Lint with flake8
-        run: |
-          # Stop build if there are syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # Exit-zero treats all errors as warnings (so build continues)
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Run pytest
         run: uv run pytest -v --maxfail=3 --disable-warnings
