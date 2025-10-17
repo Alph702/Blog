@@ -54,7 +54,9 @@
             <h1 class="Heding">{{ post[1] }}</h1>
             <p class="text">{{ post[2] }}</p>
             {% if post[3] %}
-            <img src="{{ post[3] }}" alt="Post Image" class="image" loading="lazy">
+            <div class="gallery">
+                <img src="{{ post[3] }}" alt="Post Image" class="image" loading="lazy">
+            </div>
             <br>
             {% endif %}
             <small>Posted on {{ post[4] }}</small>
@@ -65,7 +67,7 @@
             {% endif %}
         </div>
     </a>
-    <hr>
+    <!-- <hr> -->
     {% endfor %}
 </div>
 {% endblock %}
