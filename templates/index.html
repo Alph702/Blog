@@ -1,106 +1,73 @@
-{% from 'components/toast.html' import toast %}
-<!DOCTYPE html>
-<html lang="en">
+{% extends "layout.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Blog</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-</head>
+{% block content %}
 
-<body>
-    <div class="toast-container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    {{ toast(message, category) }}
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-    </div>
-    <div class="container Post-Container">
-        <h1 class="title" style="font-size: 400%;">My Blog</h1>
-        {% if 'admin' in session %}
-        <a href="{{ url_for('new_post') }}">New Post</a>
-        <a href="{{ url_for('logout') }}" id="logoutButton" onclick="logoutUser()">Logout</a>
-        {% else %}
-        <a href="{{ url_for('login') }}" id="loginButton">Login</a>
-        {% endif %}
+<div class="container Post-Container">
+    <h1 class="title" style="font-size: 400%;">My Blog</h1>
+    {% if 'admin' in session %}
+    <a href="{{ url_for('new_post') }}">New Post</a>
+    <a href="{{ url_for('logout') }}" id="logoutButton" onclick="logoutUser()">Logout</a>
+    {% else %}
+    <a href="{{ url_for('login') }}" id="loginButton">Login</a>
+    {% endif %}
 
-        <button id="toggleFilterBtn" onclick="toggleFilter()">Show Filter Options</button>
-        <div id="filterPanel" class="filter-panel">
-            <form method="GET" action="{{ url_for('filter_posts') }}" class="filter-form">
-                <div class="filter-group">
-                    <label for="year">Year:</label>
-                    <select id="year" name="year">
-                        <option value="any">Any</option>
-                        {% for y in available_years %}
-                        <option value="{{ y }}">{{ y }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label for="month">Month:</label>
-                    <select id="month" name="month"> 
-                        <option value="any">Any</option>
-                        {% for m in available_months %}
-                        <option value="{{ m }}">{{ m }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label for="day">Day:</label>
-                    <select id="day" name="day">
-                        <option value="any">Any</option>
-                        {% for d in available_days %}
-                        <option value="{{ d }}">{{ d }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <button type="submit">Apply Filter</button>
-                <a href="{{ url_for('home') }}" class="filter-reset-btn">Reset Filters</a>
-            </form>
-        </div>
-
-        <hr>
-
-        {% for post in posts %}
-        <a href="{{ url_for('view_post', post_id=post[0]) }}" class="post-button">
-            <div class="post">
-                <h1 class="Heding">{{ post[1] }}</h1>
-                <p class="text">{{ post[2] }}</p>
-                {% if post[3] %}
-                <img src="{{ post[3] }}" alt="Post Image" class="image" loading="lazy">
-                <br>
-                {% endif %}
-                <small>Posted on {{ post[4] }}</small>
-                <br>
-                {% if 'admin' in session %}
-                <a style="padding-right: 5px;" href="{{ url_for('edit_post', post_id=post[0]) }}">Edit</a>
-                <a href="{{ url_for('delete_post', post_id=post[0]) }}">Delete</a>
-                {% endif %}
+    <button id="toggleFilterBtn" onclick="toggleFilter()">Show Filter Options</button>
+    <div id="filterPanel" class="filter-panel">
+        <form method="GET" action="{{ url_for('filter_posts') }}" class="filter-form">
+            <div class="filter-group">
+                <label for="year">Year:</label>
+                <select id="year" name="year">
+                    <option value="any">Any</option>
+                    {% for y in available_years %}
+                    <option value="{{ y }}">{{ y }}</option>
+                    {% endfor %}
+                </select>
             </div>
-        </a>
-        <hr>
-        {% endfor %}
+            <div class="filter-group">
+                <label for="month">Month:</label>
+                <select id="month" name="month"> 
+                    <option value="any">Any</option>
+                    {% for m in available_months %}
+                    <option value="{{ m }}">{{ m }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="day">Day:</label>
+                <select id="day" name="day">
+                    <option value="any">Any</option>
+                    {% for d in available_days %}
+                    <option value="{{ d }}">{{ d }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit">Apply Filter</button>
+            <a href="{{ url_for('home') }}" class="filter-reset-btn">Reset Filters</a>
+        </form>
     </div>
 
-    <script>
-        function toggleFilter() {
-            var filterPanel = document.getElementById('filterPanel');
-            var toggleBtn = document.getElementById('toggleFilterBtn');
-            if (filterPanel.classList.contains('open')) {
-                filterPanel.classList.remove('open');
-                toggleBtn.textContent = 'Show Filter Options';
-            } else {
-                filterPanel.classList.add('open');
-                toggleBtn.textContent = 'Hide Filter Options';
-            }
-        }
-    </script>
-</body>
+    <hr>
 
-</html>
+    {% for post in posts %}
+    <a href="{{ url_for('view_post', post_id=post[0]) }}" class="post-button">
+        <div class="post">
+            <h1 class="Heding">{{ post[1] }}</h1>
+            <p class="text">{{ post[2] }}</p>
+            {% if post[3] %}
+            <div class="gallery">
+                <img src="{{ post[3] }}" alt="Post Image" class="image" loading="lazy">
+            </div>
+            <br>
+            {% endif %}
+            <small>Posted on {{ post[4] }}</small>
+            <br>
+            {% if 'admin' in session %}
+            <a style="padding-right: 5px;" href="{{ url_for('edit_post', post_id=post[0]) }}">Edit</a>
+            <a href="{{ url_for('delete_post', post_id=post[0]) }}">Delete</a>
+            {% endif %}
+        </div>
+    </a>
+    <!-- <hr> -->
+    {% endfor %}
+</div>
+{% endblock %}

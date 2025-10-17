@@ -49,9 +49,6 @@ UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Try to detect which column holds timestamp-like values in the remote `posts` table.
-# Supabase projects commonly use `created_at` by default; earlier code assumed `timestamp`.
-# We'll probe a single row and pick the first matching candidate.
 TIMESTAMP_FIELD = None
 
 
@@ -344,9 +341,9 @@ def new_post():
                         response = supabase_client.storage.from_(BLOG_IMAGES_BUCKET).upload(filename, file_bytes, {"content-type": file.content_type})
                         image_url = f"{SUPABASE_URL}/storage/v1/object/public/{BLOG_IMAGES_BUCKET}/{filename}"
                     except Exception as e:
-                        print(f"Error uploading image to Superbase: {e}")                  
+                        print(f"Error uploading image to Superbase: {e}") 
                         try:
-                            if e.statusCode == 409:
+                            if int(e.status) == 409:
                                 image_url = f"{SUPABASE_URL}/storage/v1/object/public/{BLOG_IMAGES_BUCKET}/{filename}"
                             else:
                                 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -407,7 +404,9 @@ def delete_post(post_id):
 
     try:
         supabase_client.table('posts').delete().eq('id', post_id).execute()
+        flash(f'Post: {post_id} deleted successfully!', 'success')
     except Exception as e:
+        flash(f'Error deleting post: {post_id}!', 'error')
         print(f"Error deleting post from Superbase: {e}")
 
     return redirect(url_for('home'))

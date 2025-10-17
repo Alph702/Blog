@@ -606,3 +606,19 @@ box {
 .toast-warning {
     border-color: #ffc107;
 }
+
+/* Image viewer */
+.viewer-backdrop {
+  background-color: rgba(0, 0, 0, 0.3) !important; /* translucent */
+  backdrop-filter: blur(12px) !important;          /* the magic! */
+  -webkit-backdrop-filter: blur(12px) !important;  /* for Safari */
+}
+
+.viewer-canvas img {
+  border-radius: var(--border-radius) !important;
+  box-shadow: 0 4px 20px var(--shadow) !important;
+}
+
+img {
+    cursor: pointer;
+}

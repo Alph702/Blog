@@ -1,7 +1,5 @@
 let Post = document.getElementsByClassName("Post-Container");
 
-
-
 function checkSession() {
     let isLoggedIn = localStorage.getItem("isLoggedIn");
 
@@ -68,5 +66,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 toast.remove();
             });
         }
+    });
+});
+
+function toggleFilter() {
+    var filterPanel = document.getElementById('filterPanel');
+    var toggleBtn = document.getElementById('toggleFilterBtn');
+    if (filterPanel.classList.contains('open')) {
+        filterPanel.classList.remove('open');
+        toggleBtn.textContent = 'Show Filter Options';
+    } else {
+        filterPanel.classList.add('open');
+        toggleBtn.textContent = 'Hide Filter Options';
+    }
+}
+
+// image enhancement using viewer.js
+document.addEventListener('DOMContentLoaded', function () {
+    const galleries = document.querySelectorAll('.gallery');
+
+    galleries.forEach(gallery => {
+        const image = gallery.querySelector('img');
+        const viewer = new Viewer(gallery, {
+            movable: true,
+            zoomable: true,
+            fullscreen: true,
+            toolbar: false,
+        });
+
+        image.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            viewer.show();
+        });
     });
 });

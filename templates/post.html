@@ -1,95 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "layout.html" %}
 
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>
-        {% if post.title %}{{ post.title }}{% else %}My Blog - A Great Post{%
-        endif %}
-    </title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}" />
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
-    <style>
-        body {
-            font-family: 'Comic Neue', sans-serif;
-            background-color: var(--background-dark);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            /* min-height: 100vh; */
-        }
+{% block title %}{% if post.title %}{{ post.title }}{% else %}My Blog - A Great Post{% endif %}{% endblock %}
 
-        .container {
-            max-width: 1000px;
-            width: 100%;
-            padding: var(--container-padding);
-            background-color: var(--background-light);
-            border-radius: var(--border-radius);
-            box-shadow: 0 4px 8px var(--hover-shadow);
-        }
-
-        h1 {
-            font-size: var(--font-large);
-            margin: 10px 0;
-            color: var(--primary-color);
-        }
-
-        p {
-            font-size: var(--font-medium);
-            margin: 8px 0;
-        }
-
-        .image {
-            width: 100%;
-            height: auto;
-            border-radius: var(--border-radius);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-            margin: 15px 0;
-        }
-        @media screen and (max-width: 800px) {
-            body{
-                background: var(--background-light);
-            }
-            .container {
-                padding: 0;
-                box-shadow: none;
-            }
-
-            h1 {
-                font-size: 2.5rem;
-            }
-
-            p {
-                font-size: 1.1rem;
-            }
-            
-        }
-    </style>
-</head>
-
-<body>
-    <div class="container">
-        <h1>{{ post.title }}</h1>
-        <p><strong>Published:</strong> {{ post.timestamp }}</p>
-        <p>{{ post.content | safe }}</p>
-        {% if post.image %}
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/post.css') }}">
+<div class="container">
+    <h1>{{ post.title }}</h1>
+    <p><strong>Published:</strong> {{ post.timestamp }}</p>
+    <p>{{ post.content | safe }}</p>
+    {% if post.image %}
+    <div class="gallery">
         <img src="{{ post.image }}" alt="Post Image" class="image"
             style="width: 90%" />
-
-        {% endif %}
-        <br />
     </div>
-    <div class="Back-to-home-container">
-        <a href="/" class="Back-to-home">
-            <img src="{{ url_for('static', filename='arrow.svg') }}" alt="Back" class="back-image" />
-            <samp id="text">Back to Home</samp>
-        </a>
-    </div>
-</body>
+    {% endif %}
+    <br />
+</div>
+<div class="Back-to-home-container">
+    <a href="/" class="Back-to-home">
+        <img src="{{ url_for('static', filename='arrow.svg') }}" alt="Back" class="back-image" />
+        <samp id="text">Back to Home</samp>
+    </a>
+</div>
 
-</html>
+{% endblock %}
