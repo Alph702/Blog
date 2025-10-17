@@ -1,7 +1,5 @@
 let Post = document.getElementsByClassName("Post-Container");
 
-
-
 function checkSession() {
     let isLoggedIn = localStorage.getItem("isLoggedIn");
 
@@ -70,3 +68,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+function toggleFilter() {
+    var filterPanel = document.getElementById('filterPanel');
+    var toggleBtn = document.getElementById('toggleFilterBtn');
+    if (filterPanel.classList.contains('open')) {
+        filterPanel.classList.remove('open');
+        toggleBtn.textContent = 'Show Filter Options';
+    } else {
+        filterPanel.classList.add('open');
+        toggleBtn.textContent = 'Hide Filter Options';
+    }
+}

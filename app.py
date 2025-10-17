@@ -407,7 +407,9 @@ def delete_post(post_id):
 
     try:
         supabase_client.table('posts').delete().eq('id', post_id).execute()
+        flash(f'Post: {post_id} deleted successfully!', 'success')
     except Exception as e:
+        flash(f'Error deleting post: {post_id}!', 'error')
         print(f"Error deleting post from Superbase: {e}")
 
     return redirect(url_for('home'))
