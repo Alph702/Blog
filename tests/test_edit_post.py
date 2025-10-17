@@ -112,7 +112,7 @@ def test_edit_post_update_without_changing_image(admin_logged_in_page: Page, fla
     page.goto(f"{flask_app_url}/")
     page.locator("a", has_text=test_title).click()
     post_id = page.url.split('/')[-1]
-    original_image_src = page.locator("img").get_attribute("src")
+    original_image_src = page.locator(".image").get_attribute("src")
 
     page.goto(f"{flask_app_url}/edit/{post_id}")
     expect(page).to_have_title("Edit Post")
@@ -128,7 +128,7 @@ def test_edit_post_update_without_changing_image(admin_logged_in_page: Page, fla
     page.locator("a", has_text=updated_title).click()
     expect(page.locator("h1")).to_have_text(updated_title)
     expect(page.locator("p").nth(1)).to_have_text(updated_content)
-    expect(page.locator("img")).to_have_attribute("src", original_image_src)
+    expect(page.locator(".image")).to_have_attribute("src", original_image_src)
 
     page.goto(f"{flask_app_url}/delete/{post_id}")
     os.remove(image_path)

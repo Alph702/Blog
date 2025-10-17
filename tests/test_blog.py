@@ -98,7 +98,7 @@ def test_create_post_with_image(admin_logged_in_page: Page, flask_app_url):
 
     page.locator("a", has_text=test_title).click()
     post_id = page.url.split('/')[-1]
-    expect(page.locator("img")).to_be_visible()
+    expect(page.locator(".image")).to_be_visible()
 
     page.goto(f"{flask_app_url}/delete/{post_id}")
     os.remove(image_path)
