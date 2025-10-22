@@ -2,7 +2,7 @@
 
 {% block title %}New Post{% endblock %}
 
-{% block content %}
+{% block content %} 
 <div class="container form-container">
     <h1 class="new-post-h">New Post</h1>
     <button class="full-screen-button" onclick="FullScreen()"><img
@@ -13,6 +13,7 @@
         <textarea class="editor" id="editor" name="content" placeholder="Write your post here..." rows="5"
             required></textarea>
         <input class="form-file-input" type="file" name="image" accept="image/*">
+        <input class="form-file-input" type="file" name="video" accept="video/*">
         <button type="submit">Post</button>
     </form>
 

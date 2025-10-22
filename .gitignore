@@ -5,3 +5,6 @@ GEMINI.md
 .venv
 static/uploads/
 __pycache__/
+
+uploads/
+outputs/

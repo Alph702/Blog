@@ -3,12 +3,13 @@ import os
 import pytz
 import supabase
 from dotenv import load_dotenv
-from dateutil import parser
+from dateutil import parser 
 from flask import Flask, redirect, render_template, request, session, url_for, jsonify, make_response, flash 
 from markupsafe import Markup
 from werkzeug.utils import secure_filename
 import hashlib
 import uuid
+from worker import Worker
 
 def get_local_timestamp():
     local_tz = pytz.timezone('Asia/Karachi')
@@ -36,17 +37,17 @@ SUPABASE_KEY = (
 
 if os.getenv('SUPABASE_SERVICE_ROLE_KEY') or os.getenv('SUPERBASE_SERVICE_ROLE_KEY'):
     print("WARNING: Using Supabase service role key for server operations. Keep this secret and never expose it to browsers.")
-BLOG_IMAGES_BUCKET = os.getenv('BLOG_IMAGES_BUCKET') or os.getenv('SUPERBASE_S3_BUCKET_NAME') or 'blog_images'
-
+BLOG_IMAGES_BUCKET = os.getenv('BLOG_IMAGES_BUCKET') or os.getenv('SUPERBASE_IMAGES_BUCKET_NAME') or 'blog_images'
+BLOG_VIDEOS_BUCKET = os.getenv('BLOG_VIDEOS_BUCKET') or os.getenv('SUPERBASE_VIDEOS_BUCKET_NAME') or 'blog_videos'
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     print("Warning: SUPABASE_URL or SUPERBASE_ANON_KEY is not set. Supabase operations will likely fail.")
 
 supabase_client = supabase.create_client(SUPABASE_URL, SUPABASE_KEY)
-
+worker = Worker(BLOG_VIDEOS_BUCKET)
 
 UPLOAD_FOLDER = 'static/uploads'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'mp4', 'mov', 'avi', 'mkv', 'webm'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 TIMESTAMP_FIELD = None
@@ -121,17 +122,18 @@ def home():
     
     # Select fields dynamically based on the resolved TIMESTAMP_FIELD
     
-    select_fields = f"id, title, content, image, {TIMESTAMP_FIELD}" if TIMESTAMP_FIELD else "id, title, content, image"
+    select_fields = f"id, title, content, image, {TIMESTAMP_FIELD}, video_id" if TIMESTAMP_FIELD else "id, title, content, image, video_id"
     try:
         response = supabase_client.table('posts').select(select_fields).order(TIMESTAMP_FIELD if TIMESTAMP_FIELD else 'id', desc=True).execute()
         posts_data = response.data or []
     except Exception as e:
         print(f"Error fetching posts ordered by {TIMESTAMP_FIELD}: {e}")
-        response = supabase_client.table('posts').select('id, title, content, image').order('id', desc=True).execute()
+        response = supabase_client.table('posts').select('id, title, content, image, video_id').order('id', desc=True).execute()
         posts_data = response.data or []
 
     posts = []
     for post in posts_data:
+        # print(f"Post data: {post}")
         ts_value = post.get(TIMESTAMP_FIELD) if TIMESTAMP_FIELD else None
         if ts_value:
             try:
@@ -141,8 +143,26 @@ def home():
                 formatted_timestamp = str(ts_value)
         else:
             formatted_timestamp = ''
+        
+        videodata = None
+        video_id = post.get('video_id')
+        if video_id:
+            try:
+                video_resp = supabase_client.table('videos').select('filepath', 'filename', 'status').eq('id', video_id).single().execute()
+                video_record = video_resp.data
+                if video_record:
+                    videodata = {
+                        'id': video_id,
+                        'filename': video_record.get('filename'),
+                        'filepath': video_record.get('filepath'),
+                        'status': video_record.get('status'),
+                        'url': f"{SUPABASE_URL}/storage/v1/object/public/{BLOG_VIDEOS_BUCKET}/{video_record.get('filename')}"
+                    }
+            except Exception as e:
+                print(f"Error fetching video info for video_id={video_id}: {e}")
 
-        posts.append((post.get('id'), post.get('title'), Markup(post.get('content', '')), post.get('image'), formatted_timestamp))
+        
+        posts.append((post.get('id'), post.get('title'), Markup(post.get('content', '')), post.get('image'), formatted_timestamp, videodata))
     
     available_years = []
     available_months = []
@@ -324,6 +344,7 @@ def new_post():
         title = request.form['title']
         content = request.form['content']
         image_url = None
+        video_id = None
 
         if 'image' in request.files:
             file = request.files['image']
@@ -356,6 +377,22 @@ def new_post():
                             print(f"Failed to save image locally: {e2}")
                             image_url = None
                 
+        if 'video' in request.files:
+            file = request.files['video']
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                try:
+                    worker_response = worker.save_file(file)
+                    video_id = worker_response.get('file_id')
+                    if video_id:
+                        worker.queue_file(video_id)
+                        print(f"Queued video file for processing with video_id={video_id}")
+                    else:
+                        video_id = None
+                        print("Failed to get video_id after saving video file")
+                except Exception as e:
+                    print(f"Error saving or queuing video file: {e}")
+
 
         timestamp = get_local_timestamp()
 
@@ -370,7 +407,7 @@ def new_post():
                     current_max = int(max_rows[0].get('id')) if max_rows and max_rows[0].get('id') is not None else 0
                     new_id = current_max + 1
 
-                    supabase_client.table('posts').insert({'id': new_id, 'title': title, 'content': content, 'image': image_url, 'timestamp': timestamp}).execute()
+                    supabase_client.table('posts').insert({'id': new_id, 'title': title, 'content': content, 'image': image_url, 'timestamp': timestamp, 'video_id': video_id}).execute()
                     print(f"Inserted post with id={new_id}")
                     inserted = True
                 except Exception as e:
@@ -488,7 +525,7 @@ def set_session():
 
 @app.route('/post/<int:post_id>')
 def view_post(post_id):
-    select_fields = f"id, title, content, image, {TIMESTAMP_FIELD}" if TIMESTAMP_FIELD else 'id, title, content, image'
+    select_fields = f"id, title, content, image, {TIMESTAMP_FIELD}, video_id" if TIMESTAMP_FIELD else 'id, title, content, image, video_id'
     response = supabase_client.table('posts').select(select_fields).eq('id', post_id).single().execute()
     post = response.data
 
@@ -503,12 +540,31 @@ def view_post(post_id):
                 formatted_timestamp = str(ts_val)
 
         image_url = post.get('image')
+
+        videodata = None
+        video_id = post.get('video_id')
+        if video_id:
+            try:
+                video_resp = supabase_client.table('videos').select('filepath', 'filename', 'status').eq('id', video_id).single().execute()
+                video_record = video_resp.data
+                if video_record:
+                    videodata = {
+                        'id': video_id,
+                        'filename': video_record.get('filename'),
+                        'filepath': video_record.get('filepath'),
+                        'status': video_record.get('status'),
+                        'url': f"{SUPABASE_URL}/storage/v1/object/public/{BLOG_VIDEOS_BUCKET}/{video_record.get('filename')}"
+                    }
+            except Exception as e:
+                print(f"Error fetching video info for video_id={video_id}: {e}")
+
         return render_template('post.html', post={
             "id": post.get('id'),
             "title": post.get('title'),
             "content": Markup(post.get('content', '')),
             "image": image_url,
-            "timestamp": formatted_timestamp
+            "timestamp": formatted_timestamp,
+            "video": videodata
         }, dark_mode=True)
     else:
         return "Post not found", 404
@@ -547,6 +603,21 @@ def admin_inspect():
         info['posts_count_error'] = str(e)
 
     return jsonify(info)
+
+@app.route("/video_status/<int:video_id>")
+def video_status(video_id):
+    try:
+        resp = supabase_client.table('videos').select('status').eq('id', video_id).single().execute()
+        video_record = resp.data
+        if video_record:
+            return jsonify({
+                'video_id': video_id,
+                'status': video_record.get('status'),
+            })
+        else:
+            return jsonify({'error': 'Video not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':

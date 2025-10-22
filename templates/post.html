@@ -2,7 +2,7 @@
 
 {% block title %}{% if post.title %}{{ post.title }}{% else %}My Blog - A Great Post{% endif %}{% endblock %}
 
-{% block content %}
+{% block content %} 
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/post.css') }}">
 <div class="container">
     <h1>{{ post.title }}</h1>
@@ -12,6 +12,21 @@
     <div class="gallery">
         <img src="{{ post.image }}" alt="Post Image" class="image"
             style="width: 90%" />
+    </div>
+    {% endif %}
+    {% if post.video %}
+    <div class="player" onclick="event.stopPropagation();">
+        <video
+            id="videoPlayer{{ post.video.id }}"
+            class="video-js vjs-default-skin vjs-big-play-centered"
+            controls preload="auto"
+            data-setup='{}'
+            data-id="{{ post.video.id }}"
+            data-filename="{{ post.video.filename }}"
+            data-filepath="{{ post.video.filepath }}"
+            data-status="{{ post.video.status }}"
+            data-url="{{ post.video.url }}">
+        </video>
     </div>
     {% endif %}
     <br />

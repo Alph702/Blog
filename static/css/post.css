@@ -56,3 +56,53 @@ p {
     }
     
 }
+/* 
+.player {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--background-dark);
+    border-radius: var(--border-radius);
+}
+
+.vjs-quality-menu {
+    position: absolute;
+    bottom: 35px;
+    right: 0;
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    border-radius: 6px;
+    padding: 5px;
+    min-width: 120px;
+    z-index: 999;
+}
+
+.vjs-quality-menu button {
+    display: block;
+    background: none;
+    border: none;
+    color: white;
+    width: 100%;
+    text-align: left;
+    padding: 6px 10px;
+    cursor: pointer;
+}
+
+.vjs-quality-menu button:hover {
+    background: #333;
+}
+
+.vjs-quality-button .vjs-icon-cog:before {
+    font-size: 1.8em;
+    line-height: 1.67;
+}
+
+.video-js {
+    width: 90%;
+    max-width: ; 
+    height: auto;
+    border-radius: var(--border-radius);
+    box-shadow: 0 0 20px var(--shadow);
+} */
