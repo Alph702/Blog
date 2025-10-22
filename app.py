@@ -604,21 +604,6 @@ def admin_inspect():
 
     return jsonify(info)
 
-@app.route("/video_status/<int:video_id>")
-def video_status(video_id):
-    try:
-        resp = supabase_client.table('videos').select('status').eq('id', video_id).single().execute()
-        video_record = resp.data
-        if video_record:
-            return jsonify({
-                'video_id': video_id,
-                'status': video_record.get('status'),
-            })
-        else:
-            return jsonify({'error': 'Video not found'}), 404
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
 
 if __name__ == '__main__':
     """
