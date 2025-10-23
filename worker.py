@@ -5,8 +5,8 @@ from datetime import datetime
  
 class Worker:
     def __init__(self, videos_bucket='Videos'):
-        self.upload_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
-        self.output_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'outputs')
+        self.upload_folder = os.path.join("/tmp", 'uploads') # os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
+        self.output_folder = os.path.join("/tmp", 'outputs') # os.path.join(os.path.dirname(os.path.abspath(__file__)), 'outputs')
         os.makedirs(self.upload_folder, exist_ok=True)
         os.makedirs(self.output_folder, exist_ok=True)
 
