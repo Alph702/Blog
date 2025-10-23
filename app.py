@@ -605,6 +605,10 @@ def admin_inspect():
     return jsonify(info)
 
 
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return redirect(url_for("/tmp/uploads/" + filename, code=301))
+
 if __name__ == '__main__':
     """
     Main entry point for running the Flask application.
