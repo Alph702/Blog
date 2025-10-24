@@ -1,4 +1,4 @@
-import os, subprocess, supabase, uuid, shutil
+import os, subprocess, supabase, uuid, shutil, sys
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.executors.pool import ThreadPoolExecutor
 from datetime import datetime
@@ -74,7 +74,8 @@ class Worker:
         os.makedirs(os.path.join(out_dir, "v0"), exist_ok=True)
 
         cmd = [
-            "ffmpeg", "-y", "-i", filepath,
+            "ffmpeg" if sys.platform != "linux" else os.path.join(os.path.dirname(__file__), "ffmpeg", "bin", "ffmpeg"), 
+            "-y", "-i", filepath,
             "-preset", "veryfast", "-g", "48", "-sc_threshold", "0", "-keyint_min", "48",
             "-map", "v:0", "-map", "a:0", "-b:v:0", "3000k", "-s:v:0", "1920x1080",
             "-map", "v:0", "-map", "a:0", "-b:v:1", "1500k", "-s:v:1", "1280x720",
