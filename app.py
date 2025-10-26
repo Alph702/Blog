@@ -44,7 +44,7 @@ if not SUPABASE_URL or not SUPABASE_KEY:
     print("Warning: SUPABASE_URL or SUPERBASE_ANON_KEY is not set. Supabase operations will likely fail.")
 
 supabase_client = supabase.create_client(SUPABASE_URL, SUPABASE_KEY)
-worker = Worker(BLOG_VIDEOS_BUCKET)
+worker = Worker(videos_bucket=BLOG_VIDEOS_BUCKET, SUPABASE_KEY=SUPABASE_KEY, SUPABASE_URL=SUPABASE_URL)
 
 UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'mp4', 'mov', 'avi', 'mkv', 'webm'}
@@ -156,7 +156,7 @@ def home():
                         'filename': video_record.get('filename'),
                         'filepath': video_record.get('filepath'),
                         'status': video_record.get('status'),
-                        'url': f"{SUPABASE_URL}/storage/v1/object/public/{BLOG_VIDEOS_BUCKET}/{video_record.get('filename')}"
+                        'url': video_record.get('filepath')
                     }
             except Exception as e:
                 print(f"Error fetching video info for video_id={video_id}: {e}")
@@ -617,7 +617,7 @@ if __name__ == '__main__':
         port = int(os.getenv('PORT', 8080))
         host = os.getenv('HOST', '127.0.0.1')
         print(f"Starting Flask app on {host}:{port} (debug={app.debug})")
-        app.run(host=host, port=port)
+        app.run(host=host, port=port, threaded=True)
     except Exception as e:
         import traceback, sys
         traceback.print_exc()

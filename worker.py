@@ -2,27 +2,21 @@ import os, subprocess, supabase, uuid, shutil, sys
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.executors.pool import ThreadPoolExecutor
 from datetime import datetime
+import requests
  
 class Worker:
-    def __init__(self, videos_bucket='Videos'):
-        self.upload_folder = os.path.join("/tmp", 'uploads') # os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
-        self.output_folder = os.path.join("/tmp", 'outputs') # os.path.join(os.path.dirname(os.path.abspath(__file__)), 'outputs')
+    def __init__(self, SUPABASE_KEY, SUPABASE_URL, videos_bucket='video'):
+        self.upload_folder = os.path.join("/tmp", 'uploads')
         os.makedirs(self.upload_folder, exist_ok=True)
-        os.makedirs(self.output_folder, exist_ok=True)
 
-        executors = {'default': ThreadPoolExecutor(max_workers=2)}
+        executors = {'default': ThreadPoolExecutor(max_workers=1)}
         self.scheduler = BackgroundScheduler(executors=executors)
         self.scheduler.start()
 
-        self.SUPABASE_KEY = (
-            os.getenv('SUPABASE_SERVICE_ROLE_KEY') or
-            os.getenv('SUPERBASE_SERVICE_ROLE_KEY') or
-            os.getenv('SUPERBASE_ANON_KEY') or
-            os.getenv('SUPABASE_ANON_KEY')
-        )
-        self.SUPABASE_URL = os.getenv('SUPABASE_URL')
+        self.SUPABASE_KEY = SUPABASE_KEY
+        self.SUPABASE_URL = SUPABASE_URL
         if not self.SUPABASE_URL or not self.SUPABASE_KEY:
-            print("Warning: SUPABASE_URL or SUPERBASE_ANON_KEY is not set. Supabase operations will likely fail.")
+            raise ValueError("SUPABASE_URL or SUPERBASE_ANON_KEY is not set. Supabase operations will fail.")
         self.supabase_client = supabase.create_client(self.SUPABASE_URL, self.SUPABASE_KEY)
         self.videos_bucket = videos_bucket
 
@@ -70,31 +64,14 @@ class Worker:
         filepath = result['filepath']
         filename = result['filename']
 
-        out_dir = os.path.join(self.output_folder, filename)
-        os.makedirs(os.path.join(out_dir, "v0"), exist_ok=True)
-
-        cmd = [
-            "ffmpeg" if sys.platform != "linux" else os.path.join(os.path.dirname(__file__), "ffmpeg", "bin", "ffmpeg"), 
-            "-y", "-i", filepath,
-            "-preset", "veryfast", "-g", "48", "-sc_threshold", "0", "-keyint_min", "48",
-            "-map", "v:0", "-map", "a:0", "-b:v:0", "3000k", "-s:v:0", "1920x1080",
-            "-map", "v:0", "-map", "a:0", "-b:v:1", "1500k", "-s:v:1", "1280x720",
-            "-map", "v:0", "-map", "a:0", "-b:v:2", "800k",  "-s:v:2", "854x480",
-            "-map", "v:0", "-map", "a:0", "-b:v:3", "400k",  "-s:v:3", "640x360",
-            "-var_stream_map", "v:0,a:0 v:1,a:1 v:2,a:2 v:3,a:3",
-            "-master_pl_name", "master.m3u8",
-            "-hls_time", "2", "-hls_playlist_type", "vod",
-            "-hls_segment_filename", os.path.join(out_dir, "v%v", "segment_%03d.ts"),
-            "-f", "hls", os.path.join(out_dir, "v%v", "prog_index.m3u8")
-        ]
-
         try:
             self.supabase_client.table('videos').update({'status': 'processing'}).eq('id', file_id).execute()
-            subprocess.run(cmd, check=True)
-            self._upload_folder_to_supabase(out_dir, self.videos_bucket)
-            self.supabase_client.table('videos').update({'status': 'processed', 'filepath': os.path.join(out_dir, "master.m3u8")}).eq('id', file_id).execute()
+            with open(filepath, 'rb') as video:
+                res = requests.post(f'https://ffmpeg.pythonanywhere.com/upload/{file_id}', files={'file': video})
+                if res.ok:
+                    file_path = res.json().get("master_playlist")
+            self.supabase_client.table('videos').update({'status': 'processed', 'filepath': file_path}).eq('id', file_id).execute()
             os.remove(filepath)
-            shutil.rmtree(out_dir)
-        except subprocess.CalledProcessError as e:
+        except Exception as e:
             self.supabase_client.table('videos').update({'status': 'failed'}).eq('id', file_id).execute()
             raise RuntimeError(f"Error processing file: {e}")

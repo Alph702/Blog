@@ -93,7 +93,7 @@ document.addEventListener("click", (e) => {
 
         // Load video source (auto)
         if (status === "processed") {
-            const hlsUrl = `${url}/master.m3u8`;
+            const hlsUrl = `${url}`;
             player.src({ src: hlsUrl, type: "application/x-mpegURL" });
             console.log(`🎥 ${id} → HLS (${hlsUrl})`);
         } else {
