@@ -1,4 +1,4 @@
-import os, subprocess, supabase, uuid, shutil, sys
+import os, supabase, uuid
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.executors.pool import ThreadPoolExecutor
 from datetime import datetime
