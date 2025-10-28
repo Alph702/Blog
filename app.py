@@ -133,7 +133,6 @@ def home():
 
     posts = []
     for post in posts_data:
-        # print(f"Post data: {post}")
         ts_value = post.get(TIMESTAMP_FIELD) if TIMESTAMP_FIELD else None
         if ts_value:
             try:
@@ -459,6 +458,7 @@ def edit_post(post_id):
         content = request.form['content']
         current_image_url = request.form.get('current_image_url')
         image_url = current_image_url
+        video_id = request.form.get('current_video_id')
 
         if 'image' in request.files:
             file = request.files['image']
@@ -486,8 +486,21 @@ def edit_post(post_id):
                             image_url = f"/static/uploads/{filename}"
                             print(f"Saved image locally to {local_path}; using {image_url} as image URL")
 
+        if 'video' in request.files:
+            file = request.files['video']
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                try:
+                    worker_response = worker.save_file(file)
+                    video_id = worker_response.get('file_id')
+                    if video_id:
+                        worker.queue_file(video_id)
+                    else:
+                        print("Failed to get video_id after saving video file")
+                except Exception as e:
+                    print(f"Error saving or queuing video file: {e}")
         try:
-            supabase_client.table('posts').update({'title': title, 'content': content, 'image': image_url}).eq('id', post_id).execute()
+            supabase_client.table('posts').update({'title': title, 'content': content, 'image': image_url, 'video_id': video_id}).eq('id', post_id).execute()
             flash('Post updated successfully!', 'success')
             return redirect(url_for('home'))
         except Exception as e:
@@ -496,11 +509,27 @@ def edit_post(post_id):
             return render_template('edit.html', post=request.form, error="Failed to update post.", dark_mode=True)
 
     try:
-        select_fields = f"id, title, content, image, {TIMESTAMP_FIELD}" if TIMESTAMP_FIELD else 'id, title, content, image'
+        select_fields = f"id, title, content, image, {TIMESTAMP_FIELD}, video_id" if TIMESTAMP_FIELD else 'id, title, content, image, video_id'
         response = supabase_client.table('posts').select(select_fields).eq('id', post_id).single().execute()
         post = response.data
-
         if post:
+            if post['video_id']:
+                video_id = post['video_id']
+                try:
+                    video_resp = supabase_client.table('videos').select('filepath', 'filename', 'status').eq('id', video_id).single().execute()
+                    video_record = video_resp.data
+                    if video_record:
+                        videodata = {
+                            'id': video_id,
+                            'filename': video_record.get('filename'),
+                            'filepath': video_record.get('filepath'),
+                            'status': video_record.get('status'),
+                            'url': video_record.get('filepath')
+                        }
+                        post['video'] = videodata
+                except:
+                    print(f"Error fetching video info for video_id={video_id}")
+
             return render_template('edit.html', post=post, dark_mode=True)
         else:
             flash('Post not found.', 'error')
