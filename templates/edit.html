@@ -2,6 +2,11 @@
 {% block title %}Edit Post{% endblock %}
 
 {% block content %} 
+<style>
+    .vjs-tech {
+        padding-top: 0px !important;
+    }
+</style>
 <div class="container form-container">
     <h1 class="new-post-h">Edit Post</h1>
     <button class="full-screen-button" onclick="FullScreen()"><img
@@ -17,32 +22,38 @@
             style="max-width: 200px; height: auto; margin-bottom: 10px;">
         <input type="hidden" name="current_image_url" value="{{ post.image }}">
         {% endif %}
-        <input class="form-file-input" type="file" name="image" accept="image/*">
+        <div class="upload-box form-file-input" id="uploadBoxImage">
+            <h2 class="uploader-title">Upload Image</h2>
+            <p id="placeholderImage">Drag & Drop image file here or click to select</p>
+            <input class="fileinput" type="file" id="image" name="image" accept="image/*"/>
+        </div>
         {% if post.video %}
         <p>Current Video:</p>
-        <div style="display: flex;justify-content: center;">
-            <div class="player" style="max-width: 500px; height: auto; margin-bottom: 10px;">
-                <video
-                    id="videoPlayer{{ post.video.id }}"
-                    class="video-js vjs-default-skin vjs-big-play-centered"
-                    controls preload="auto"
-                    data-setup='{}'
-                    data-id="{{ post.video.id }}"
-                    data-filename="{{ post.video.filename }}"
-                    data-filepath="{{ post.video.filepath }}"
-                    data-status="{{ post.video.status }}"
-                    data-url="{{ post.video.url }}">
-                </video>
-            </div>
-        </div>
+        <video
+            style="max-width: 500px;padding-top: 33%;"
+            id="videoPlayer{{ post.video.id }}"
+            class="video-js vjs-default-skin vjs-big-play-centered"
+            controls preload="auto"
+            data-setup='{}'
+            data-id="{{ post.video.id }}"
+            data-filename="{{ post.video.filename }}"
+            data-filepath="{{ post.video.filepath }}"
+            data-status="{{ post.video.status }}"
+            data-url="{{ post.video.url }}">
+        </video>
         <input type="hidden" name="current_video_id" value="{{ post.video.id }}">
         {% endif %}
-        <input class="form-file-input" type="file" name="video" accept="video/*">
+        <div class="upload-box form-file-input" id="uploadBoxVideo">
+            <h2 class="uploader-title">Upload Video</h2>
+            <p id="placeholderVideo">Drag & Drop video file here or click to select</p>
+            <input class="fileinput" type="file" id="video" name="video" accept="video/*"/>
+        </div>
         <button type="submit">Update Post</button>
     </form>
 
     <br>
     <a href="{{ url_for('view_post', post_id=post.id) }}">Back to Post</a>
 </div>
+<script src="{{ url_for('static', filename='js/uploader.js') }}"></script>
 <script src="{{ url_for('static', filename='js/editor.js') }}"></script>
 {% endblock %}
