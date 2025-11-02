@@ -69,7 +69,7 @@ class Worker:
         video_file_path = self.upload_folder + "/" + filename
         with open(video_file_path, 'wb') as video_file:
             video = self.supabase_client.storage.from_(self.videos_bucket).download("upload"+ "/" + filename)
-            video_file.write(video.content)
+            video_file.write(video)
         try:
             self.supabase_client.table('videos').update({'status': 'processing'}).eq('id', file_id).execute()
             with open(video_file_path, 'rb') as video:
