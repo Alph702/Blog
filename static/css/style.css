@@ -673,3 +673,11 @@ img {
     border-radius: var(--border-radius);
     box-shadow: 0 0 20px var(--shadow);
 }
+
+video {
+    border-radius: var(--border-radius);
+}
+
+.vjs-control-bar {
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+}

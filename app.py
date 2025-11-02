@@ -4,7 +4,7 @@ import pytz
 import supabase
 from dotenv import load_dotenv
 from dateutil import parser 
-from flask import Flask, redirect, render_template, request, session, url_for, jsonify, make_response, flash 
+from flask import Flask, redirect, render_template, request, session, url_for, jsonify, make_response, flash, send_from_directory
 from markupsafe import Markup
 from werkzeug.utils import secure_filename
 import hashlib
@@ -582,7 +582,7 @@ def view_post(post_id):
                         'filename': video_record.get('filename'),
                         'filepath': video_record.get('filepath'),
                         'status': video_record.get('status'),
-                        'url': f"{SUPABASE_URL}/storage/v1/object/public/{BLOG_VIDEOS_BUCKET}/{video_record.get('filename')}"
+                        'url': video_record.get('filepath')
                     }
             except Exception as e:
                 print(f"Error fetching video info for video_id={video_id}: {e}")
@@ -636,7 +636,9 @@ def admin_inspect():
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
-    return redirect(url_for("/tmp/uploads/" + filename, code=301))
+    UPLOAD_FOLDER = 'tmp/uploads'
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    return send_from_directory(UPLOAD_FOLDER, filename)
 
 if __name__ == '__main__':
     """

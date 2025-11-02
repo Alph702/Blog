@@ -44,6 +44,15 @@ menu.style.bottom = "35px";
 menu.style.right = "10px";
 qualityButton.el().appendChild(menu);
 
+function hideQualityButton() {
+    qualityButton.el().style.display = "none";
+}
+
+function showQualityButton() {
+    qualityButton.el().style.display = "block";
+}
+
+
 let qualityOptions = [];
 
         // Fill in quality levels when detected
@@ -94,10 +103,12 @@ document.addEventListener("click", (e) => {
         // Load video source (auto)
         if (status === "processed") {
             const hlsUrl = `${url}`;
+            showQualityButton();
             player.src({ src: hlsUrl, type: "application/x-mpegURL" });
             console.log(`🎥 ${id} → HLS (${hlsUrl})`);
         } else {
             const normalUrl = `/uploads/${filename}`;
+            hideQualityButton();
             player.src({ src: normalUrl, type: "video/mp4" });
             console.log(`📁 ${id} → MP4 (${normalUrl})`);
         }
