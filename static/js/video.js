@@ -107,7 +107,7 @@ document.addEventListener("click", (e) => {
             player.src({ src: hlsUrl, type: "application/x-mpegURL" });
             console.log(`🎥 ${id} → HLS (${hlsUrl})`);
         } else {
-            const normalUrl = `/uploads/${filename}`;
+            const normalUrl = `${url}`;
             hideQualityButton();
             player.src({ src: normalUrl, type: "video/mp4" });
             console.log(`📁 ${id} → MP4 (${normalUrl})`);

@@ -19,11 +19,14 @@ class Worker:
             raise ValueError("SUPABASE_URL or SUPERBASE_ANON_KEY is not set. Supabase operations will fail.")
         self.supabase_client = supabase.create_client(self.SUPABASE_URL, self.SUPABASE_KEY)
         self.videos_bucket = videos_bucket
+        # self.local_file = None
 
     def save_file(self, file):
         filename = uuid.uuid4().hex + '.' + file.filename.split('.')[-1]
-        filepath = os.path.join(self.upload_folder, filename)
-        file.save(filepath)
+        filepath = f"{self.SUPABASE_URL}/storage/v1/object/public/{self.videos_bucket}/upload/{filename}"
+        self.supabase_client.storage.from_(self.videos_bucket).upload("upload"+ "/" + filename, file.read(), {"content-type": file.content_type})
+        # self.local_file = self.upload_folder + "/" + filename
+        # file.save(self.local_file)
         self.supabase_client.table('videos').insert({'filename': filename, 'filepath': filepath}).execute()
         file_id = self.supabase_client.table('videos').select('id').eq('filepath', filepath).execute().data[0]['id']
         return {"message": "File uploaded successfully", "filename": filename, 'file_id': file_id}
@@ -63,15 +66,18 @@ class Worker:
         result = result.data[0]
         filepath = result['filepath']
         filename = result['filename']
-
+        video_file_path = self.upload_folder + "/" + filename
+        with open(video_file_path, 'wb') as video_file:
+            video = self.supabase_client.storage.from_(self.videos_bucket).download("upload"+ "/" + filename)
+            video_file.write(video.content)
         try:
             self.supabase_client.table('videos').update({'status': 'processing'}).eq('id', file_id).execute()
-            with open(filepath, 'rb') as video:
+            with open(video_file_path, 'rb') as video:
                 res = requests.post(f'https://ffmpeg.pythonanywhere.com/upload/{file_id}', files={'file': video})
                 if res.ok:
                     file_path = res.json().get("master_playlist")
             self.supabase_client.table('videos').update({'status': 'processed', 'filepath': file_path}).eq('id', file_id).execute()
-            os.remove(filepath)
+            self.supabase_client.storage.from_(self.videos_bucket).remove([f"upload/{filename}"])
         except Exception as e:
             self.supabase_client.table('videos').update({'status': 'failed'}).eq('id', file_id).execute()
             raise RuntimeError(f"Error processing file: {e}")
