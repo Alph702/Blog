@@ -25,6 +25,8 @@
     --navbar-padding: 10px;
     --footer-padding: 10px;
 
+    --input-margin: 10px 0;
+
     --border-radius: 10px;
     --button-radius: 5px;
 
@@ -138,13 +140,16 @@ form {
     box-shadow: 0 4px 6px var(--shadow);
     width: var(--form-width);
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 input,
 textarea {
     width: 90%;
     padding: var(--input-padding);
-    margin: 10px 0;
+    margin: var(--input-margin);
     border: 1px solid var(--input-border);
     border-radius: var(--button-radius);
     background-color: var(--input-bg);
@@ -680,4 +685,38 @@ video {
 
 .vjs-control-bar {
     border-radius: 0 0 var(--border-radius) var(--border-radius);
+}
+
+/* Uploader */
+
+.uploader-title {
+    font-size: var(--font-large);
+    margin-bottom: 20px;
+    color: var(--primary-color);
+    letter-spacing: 1px;
+}
+
+.upload-box {
+    border: 2px dashed var(--primary-color);
+    border-radius: var(--border-radius);
+    background: var(--input-bg);
+    width: 90%;
+    margin: var(--input-margin);
+    transition: background 0.3s, border-color 0.3s;
+    cursor: pointer;
+    padding: var(--input-padding);
+}
+
+.upload-box.dragover {
+    background: rgba(0, 255, 0, 0.1);
+    border-color: var(--primary-hover);
+}
+
+.upload-box p {
+    font-size: var(--font-medium);
+    color: var(--footer-text);
+}
+
+.fileinput {
+    display: none;
 }
