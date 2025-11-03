@@ -7,20 +7,30 @@ const fileInputVideo = document.getElementById('video');
 const placeholderVideo = document.getElementById('placeholderVideo');
 
 function showToast(message, type='info') {
-    const toastContainer = document.getElementsByClassName('toast-container')[0] || document.createElement('div');
-    toastContainer.innerHTML = `
-        <div class="toast toast-${type}" role="alert" aria-live="assertive" aria-atomic="true">
-    <div class="toast-body">
-        ${message}
-    </div>
-    <button type="button" class="close" data-dismiss="toast" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-    </button>
-</div>
+    let toastContainer = document.querySelector('.toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container';
+        document.body.appendChild(toastContainer);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
+    toast.setAttribute('aria-atomic', 'true');
+    toast.innerHTML = `
+        <div class="toast-body">
+            ${message}
+        </div>
+        <button type="button" class="close" data-dismiss="toast" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
     `;
+    toastContainer.appendChild(toast);
     toastContainer.style.opacity = '1';
     toastContainer.style.transform = 'translateY(0)';
-    setTimeout(() => toastContainer.remove(), 4000);
+    setTimeout(() => toast.remove(), 4000);
 }
 
 uploadBoxImage.addEventListener('click', () => fileInputImage.click());
