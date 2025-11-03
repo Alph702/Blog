@@ -75,7 +75,7 @@ class Worker:
             file_path = None
             try:
                 with open(video_file_path, 'rb') as video:
-                    res = requests.post(f'https://ffmpeg.pythonanywhere.com/upload/{file_id}', files={'file': video}, timeout=300)
+                    res = requests.post(f'https://ffmpeg.pythonanywhere.com/upload/{file_id}', files={'file': video}, timeout=3000)
                 if res.ok:
                     response_json = res.json()
                     if response_json and response_json.get("master_playlist"):
