@@ -53,7 +53,7 @@ def test_create_post_with_video(admin_logged_in_page: Page, flask_app_url):
 
     # 3. Poll and wait for the video to be processed
     post_link = post_locator.locator("a.post-button").first
-    post_url = f"{flask_app_url}{post_link.get_attribute("href")}"
+    post_url = f"{flask_app_url}{post_link.get_attribute('href')}"
     
     processing_complete = False
     for i in range(120): # Poll for up to 120 seconds
@@ -167,7 +167,7 @@ def test_edit_post_change_video(admin_logged_in_page: Page, flask_app_url):
     page.goto(f"{flask_app_url}/")
     post_locator = page.locator(f".post:has-text('{test_title}')")
     post_link = post_locator.locator("a.post-button").first
-    post_url = f"{flask_app_url}{post_link.get_attribute("href")}"
+    post_url = f"{flask_app_url}{post_link.get_attribute('href')}"
     post_id = post_url.split('/')[-1]
 
     processing_complete = False

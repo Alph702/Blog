@@ -72,12 +72,29 @@ class Worker:
             video_file.write(video)
         try:
             self.supabase_client.table('videos').update({'status': 'processing'}).eq('id', file_id).execute()
-            with open(video_file_path, 'rb') as video:
-                res = requests.post(f'https://ffmpeg.pythonanywhere.com/upload/{file_id}', files={'file': video})
+            file_path = None
+            try:
+                with open(video_file_path, 'rb') as video:
+                    res = requests.post(f'https://ffmpeg.pythonanywhere.com/upload/{file_id}', files={'file': video}, timeout=300)
                 if res.ok:
-                    file_path = res.json().get("master_playlist")
-            self.supabase_client.table('videos').update({'status': 'processed', 'filepath': file_path}).eq('id', file_id).execute()
-            self.supabase_client.storage.from_(self.videos_bucket).remove([f"upload/{filename}"])
+                    response_json = res.json()
+                    if response_json and response_json.get("master_playlist"):
+                        file_path = response_json.get("master_playlist")
+                    else:
+                        print(f"Processing failed for file_id {file_id}: 'master_playlist' not in response. Response: {res.text}")
+                else:
+                    print(f"Processing request failed for file_id {file_id}: status code {res.status_code}. Response: {res.text}")
+            except requests.exceptions.RequestException as e:
+                print(f"Error during request to processing service for file_id {file_id}: {e}")
+
+            if file_path:
+                self.supabase_client.table('videos').update({'status': 'processed', 'filepath': file_path}).eq('id', file_id).execute()
+                self.supabase_client.storage.from_(self.videos_bucket).remove([f"upload/{filename}"])
+            else:
+                self.supabase_client.table('videos').update({'status': 'failed'}).eq('id', file_id).execute()
         except Exception as e:
             self.supabase_client.table('videos').update({'status': 'failed'}).eq('id', file_id).execute()
-            raise RuntimeError(f"Error processing file: {e}")
+            print(f"Error processing file: {e}")
+        finally:
+            if os.path.exists(video_file_path):
+                os.remove(video_file_path)
