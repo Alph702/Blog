@@ -21,11 +21,11 @@
             class="video-js vjs-default-skin vjs-big-play-centered"
             controls preload="auto"
             data-setup='{}'
-            data-id="{{ post.video.id }}"
-            data-filename="{{ post.video.filename }}"
-            data-filepath="{{ post.video.filepath }}"
-            data-status="{{ post.video.status }}"
-            data-url="{{ post.video.url }}">
+            data-id="{{ post.video.id | tojson }}"
+            data-filename="{{ post.video.filename | tojson }}"
+            data-filepath="{{ post.video.filepath | tojson }}"
+            data-status="{{ post.video.status | tojson }}"
+            data-url="{{ post.video.url | tojson }}">
         </video>
     </div>
     {% endif %}
