@@ -51,7 +51,7 @@ class Worker:
                     file_path = os.path.join(root, file_name)
                     # Calculate relative path inside output folder
                     relative_path = os.path.relpath(file_path, start=folder_path)
-                    upload_path = folder_path.split("\\")[-1] + "/" + relative_path.replace("\\", "/")  # Normalize for Supabase
+                    upload_path = os.path.basename(folder_path) + "/" + relative_path.replace(os.path.sep, "/")  # Normalize for Supabase
                     with open(file_path, "rb") as f:
                         data = f.read()
                     # Upload using Supabase storage bucket, preserving folder structure with relative_path
