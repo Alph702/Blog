@@ -2,11 +2,7 @@
 {% block title %}Edit Post{% endblock %}
 
 {% block content %} 
-<style>
-    .vjs-tech {
-        padding-top: 0px !important;
-    }
-</style>
+
 <div class="container form-container">
     <h1 class="new-post-h">Edit Post</h1>
     <button class="full-screen-button" onclick="FullScreen()"><img
@@ -29,18 +25,8 @@
         </div>
         {% if post.video %}
         <p>Current Video:</p>
-        <video
-            style="max-width: 500px;padding-top: 33%;"
-            id="videoPlayer{{ post.video.id }}"
-            class="video-js vjs-default-skin vjs-big-play-centered"
-            controls preload="auto"
-            data-setup='{}'
-            data-id="{{ post.video.id }}"
-            data-filename="{{ post.video.filename }}"
-            data-filepath="{{ post.video.filepath }}"
-            data-status="{{ post.video.status }}"
-            data-url="{{ post.video.url }}">
-        </video>
+        {% from "components/video_player.html" import video_player %}
+        {{ video_player(post.video) }}
         <input type="hidden" name="current_video_id" value="{{ post.video.id }}">
         {% endif %}
         <div class="upload-box form-file-input" id="uploadBoxVideo">

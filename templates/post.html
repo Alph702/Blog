@@ -4,6 +4,7 @@
 
 {% block content %} 
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/post.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/video_player.css') }}">
 <div class="container">
     <h1>{{ post.title }}</h1>
     <p><strong>Published:</strong> {{ post.timestamp }}</p>
@@ -15,19 +16,8 @@
     </div>
     {% endif %}
     {% if post.video %}
-    <div class="player" onclick="event.stopPropagation();">
-        <video
-            id="videoPlayer{{ post.video.id }}"
-            class="video-js vjs-default-skin vjs-big-play-centered"
-            controls preload="auto"
-            data-setup='{}'
-            data-id="{{ post.video.id }}"
-            data-filename="{{ post.video.filename }}"
-            data-filepath="{{ post.video.filepath }}"
-            data-status="{{ post.video.status }}"
-            data-url="{{ post.video.url }}">
-        </video>
-    </div>
+    {% from "components/video_player.html" import video_player %}
+    {{ video_player(post.video) }}
     {% endif %}
     <br />
 </div>
@@ -37,5 +27,6 @@
         <samp id="text">Back to Home</samp>
     </a>
 </div>
+
 
 {% endblock %}

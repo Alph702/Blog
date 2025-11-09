@@ -61,19 +61,8 @@
             {% endif %}
             {% if post[5] %}
             <a>
-                <div class="player" onclick="event.stopPropagation();">
-                    <video
-                        id="videoPlayer{{ post[5].id }}"
-                        class="video-js vjs-default-skin vjs-big-play-centered"
-                        controls preload="auto"
-                        data-setup='{}'
-                        data-id="{{ post[5].id }}"
-                        data-filename="{{ post[5].filename }}"
-                        data-filepath="{{ post[5].filepath }}"
-                        data-status="{{ post[5].status }}"
-                        data-url="{{ post[5].url }}">
-                    </video>
-                </div>
+                {% from "components/video_player.html" import video_player %}
+                {{ video_player(post[5]) }}
             </a>
             {% endif %} 
             <small>Posted on {{ post[4] }}</small>

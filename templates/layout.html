@@ -7,17 +7,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}My Blog{% endblock %}</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/video_controls.css') }}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.11.7/viewer.min.css" integrity="sha512-vRbASHFS0JiM4xwX/iqr9mrD/pXGnOP2CLdmXSSNAjLdgQVFyt4qI+BIoUW7/81uSuKRj0cWv3Dov8vVQOTHLw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.11.7/viewer.min.js" integrity="sha512-lZD0JiwhtP4UkFD1mc96NiTZ14L7MjyX5Khk8PMxJszXMLvu7kjq1sp4bb0tcL6MY+/4sIuiUxubOqoueHrW4w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <!-- Video.js -->
-    <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
-    <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
-    <script src="{{ url_for('static', filename='js/video.js') }}"></script>
-    <!-- Quality Levels -->
-    <script src="https://cdn.jsdelivr.net/npm/videojs-contrib-quality-levels@2.2.0/dist/videojs-contrib-quality-levels.min.js"></script>
 
+
+    <!-- hls.js -->
+    <script src="{{ url_for('static', filename='js/hls.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/video_player.js') }}"></script>
 </head>
 
 <body>

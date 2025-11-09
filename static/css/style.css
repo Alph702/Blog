@@ -30,6 +30,7 @@
     --border-radius: 10px;
     --button-radius: 5px;
 
+
     --font-small: clamp(0.8rem, 2vw, 1rem);
     --font-medium: clamp(1rem, 2.5vw, 1.2rem);
     --font-large: clamp(1.5rem, 3vw, 2rem);
@@ -233,7 +234,7 @@ li {
     background: rgba(255, 255, 255, 0);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-
+    z-index: 10;
     overflow: hidden;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
