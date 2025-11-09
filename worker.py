@@ -16,7 +16,7 @@ class Worker:
         self.SUPABASE_KEY = SUPABASE_KEY
         self.SUPABASE_URL = SUPABASE_URL
         if not self.SUPABASE_URL or not self.SUPABASE_KEY:
-            raise ValueError("SUPABASE_URL or SUPERBASE_ANON_KEY is not set. Supabase operations will fail.")
+            raise ValueError("SUPABASE_URL or SUPABASE_ANON_KEY is not set. Supabase operations will fail.")
         self.supabase_client = supabase.create_client(self.SUPABASE_URL, self.SUPABASE_KEY)
         self.videos_bucket = videos_bucket
         # self.local_file = None
