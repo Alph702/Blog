@@ -12,21 +12,17 @@ class Worker:
         executors = {'default': ThreadPoolExecutor(max_workers=1)}
         self.scheduler = BackgroundScheduler(executors=executors)
         self.scheduler.start()
-
         self.SUPABASE_KEY = SUPABASE_KEY
         self.SUPABASE_URL = SUPABASE_URL
         if not self.SUPABASE_URL or not self.SUPABASE_KEY:
             raise ValueError("SUPABASE_URL or SUPERBASE_ANON_KEY is not set. Supabase operations will fail.")
         self.supabase_client = supabase.create_client(self.SUPABASE_URL, self.SUPABASE_KEY)
         self.videos_bucket = videos_bucket
-        # self.local_file = None
 
     def save_file(self, file):
         filename = uuid.uuid4().hex + '.' + file.filename.split('.')[-1]
         filepath = f"{self.SUPABASE_URL}/storage/v1/object/public/{self.videos_bucket}/upload/{filename}"
         self.supabase_client.storage.from_(self.videos_bucket).upload("upload"+ "/" + filename, file.read(), {"content-type": file.content_type})
-        # self.local_file = self.upload_folder + "/" + filename
-        # file.save(self.local_file)
         self.supabase_client.table('videos').insert({'filename': filename, 'filepath': filepath}).execute()
         file_id = self.supabase_client.table('videos').select('id').eq('filepath', filepath).execute().data[0]['id']
         return {"message": "File uploaded successfully", "filename": filename, 'file_id': file_id}
