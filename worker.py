@@ -69,7 +69,7 @@ class Worker:
         try:
             self.supabase_client.table('videos').update({'status': 'processing'}).eq('id', file_id).execute()
             with open(video_file_path, 'rb') as video:
-                res = requests.post(f'https://ffmpeg.pythonanywhere.com/upload/{file_id}', files={'file': video}, timeout=3000)
+                res = requests.post(f'https://ffmpeg.pythonanywhere.com/upload/{file_id}', files={'file': video})
                 if res.ok:
                     file_path = res.json().get("master_playlist")
             self.supabase_client.table('videos').update({'status': 'processed', 'filepath': file_path}).eq('id', file_id).execute()
