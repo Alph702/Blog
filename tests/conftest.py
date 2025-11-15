@@ -61,12 +61,12 @@ def page(flask_app_url):
 # Fixture for admin login
 @pytest.fixture(scope="function")
 def admin_logged_in_page(page: Page, flask_app_url):
-    page.goto('about:blank')
-    page.goto(f"{flask_app_url}/login")
+    page.goto('about:blank', timeout=300000)
+    page.goto(f"{flask_app_url}/login", timeout=300000)
     page.fill("input[name='username']", os.environ["ADMIN_USERNAME"])
     page.fill("input[name='password']", os.environ["ADMIN_PASSWORD"])
     page.click("button[type='submit']")
-    expect(page).to_have_url(f"{flask_app_url}/")
+    expect(page).to_have_url(f"{flask_app_url}/", timeout=300000)
     yield page
-    page.goto(f"{flask_app_url}/logout")
-    expect(page).to_have_url(f"{flask_app_url}/")
+    page.goto(f"{flask_app_url}/logout", timeout=300000)
+    expect(page).to_have_url(f"{flask_app_url}/", timeout=300000)

@@ -72,6 +72,9 @@ class Worker:
                 res = requests.post(f'https://ffmpeg.pythonanywhere.com/upload/{file_id}', files={'file': video})
                 if res.ok:
                     file_path = res.json().get("master_playlist")
+                else:
+                    file_path = filepath
+                    raise RuntimeError(f"Error processing video: {res.text}")
             self.supabase_client.table('videos').update({'status': 'processed', 'filepath': file_path}).eq('id', file_id).execute()
             self.supabase_client.storage.from_(self.videos_bucket).remove([f"upload/{filename}"])
         except Exception as e:

@@ -239,6 +239,26 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     });
                 });
+
+                hlsInstance.on(Hls.Events.ERROR, function (event, data) {
+                    if (data.fatal) {
+                        switch (data.type) {
+                            case Hls.ErrorTypes.NETWORK_ERROR:
+                                console.error("HLS fatal network error:", data);
+                                break;
+                            case Hls.ErrorTypes.MEDIA_ERROR:
+                                console.error("HLS fatal media error:", data);
+                                hlsInstance.recoverMediaError();
+                                break;
+                            default:
+                                console.error("HLS fatal error:", data);
+                                hlsInstance.destroy();
+                                break;
+                        }
+                    } else {
+                        console.warn("HLS non-fatal error:", data);
+                    }
+                });
             } else if (videoEl.canPlayType("application/vnd.apple.mpegurl")) {
                 // Native HLS support (Safari)
                 videoEl.src = url;
