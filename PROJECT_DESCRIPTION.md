@@ -20,11 +20,16 @@ This project is a simple, yet functional, blogging platform built using the Flas
     *   **Jinja2 Templating**: All frontend views are dynamically rendered using Jinja2 templates, ensuring a consistent and maintainable UI.
     *   **Hacker-Themed UI**: A custom dark theme (`static/style.css`) provides a distinct visual identity.
 *   **Responsive Design**: Basic responsiveness for viewing on different devices.
+*   **Video Upload and Streaming**:
+    *   **Asynchronous Processing**: Uploaded videos are processed in the background, preventing UI blocking.
+    *   **HLS Conversion**: Videos are converted to HTTP Live Streaming (HLS) format for adaptive bitrate streaming.
+    *   **Custom Video Player**: A feature-rich, custom-built video player with controls for playback, volume, speed, quality selection, and fullscreen.
 
 ## 4. Technology Stack
 
 ### Backend
 *   **Flask**: The micro web framework for Python, forming the core of the application's backend. Handles routing, request processing, and view rendering.
+*   **APScheduler**: A Python library for scheduling background jobs, used to process video uploads asynchronously.
 *   **python-dotenv**: Manages environment variables, allowing for secure configuration without hardcoding sensitive information.
 *   **pytz & python-dateutil**: Used for robust timezone handling and parsing of date/time strings, ensuring accurate timestamp display.
 *   **Werkzeug**: A comprehensive WSGI utility library that Flask is built upon, providing tools for HTTP requests, responses, and utilities.
@@ -33,31 +38,39 @@ This project is a simple, yet functional, blogging platform built using the Flas
 
 ### Database & Storage
 *   **Supabase**:
-    *   **PostgreSQL Database**: Provides the relational database for storing blog post data (titles, content, timestamps, etc.). Accessed via `psycopg2-binary`.
-    *   **Supabase Storage**: Used for storing uploaded images associated with blog posts, offering a CDN-backed solution.
+    *   **PostgreSQL Database**: Provides the relational database for storing blog post and video metadata. Accessed via `psycopg2-binary`.
+    *   **Supabase Storage**: Used for storing uploaded images and videos (both raw and processed HLS formats).
 
 ### Frontend
 *   **Jinja2**: The templating engine used by Flask to render dynamic HTML pages.
 *   **HTML5**: Standard markup language for creating web pages.
 *   **CSS3 (`static/style.css`)**: Custom styles to achieve the hacker-themed dark UI.
-*   **JavaScript (`static/script.js`)**: For any client-side interactivity and dynamic behavior.
+*   **JavaScript**:
+    *   `static/script.js`: For general client-side interactivity.
+    *   `static/js/uploader.js`: Handles client-side logic for file uploads.
+    *   `hls.min.js`: A JavaScript library for playing HLS streams.
+    *   `static/js/video_player.js`: Implements the custom video player functionality.
 
 ### Testing
 *   **pytest**: A powerful and flexible testing framework for Python, used for writing unit and integration tests.
 *   **pytest-playwright**: A plugin for `pytest` that enables end-to-end testing of web applications using Playwright, ensuring the UI and user flows function correctly.
 
 ## 5. Architecture
-The application follows a **monolithic architecture** with a clear separation of concerns:
+The application follows a **monolithic architecture** but utilizes a separate background worker for handling long-running tasks, ensuring the web application remains responsive.
 
-*   **`app.py`**: This is the main application file. It defines all the routes, handles HTTP requests, interacts with the Supabase backend (both database and storage), processes form submissions, and renders the appropriate Jinja2 templates. It acts as the central orchestrator.
-*   **`templates/` Directory**: Contains all the Jinja2 HTML templates (`index.html`, `post.html`, `new.html`, `login.html`). These templates define the structure and layout of the web pages, with dynamic content injected by Flask.
-*   **`static/` Directory**: Stores all static assets, including:
-    *   `style.css`: The main stylesheet for the application's visual design.
-    *   `script.js`: Client-side JavaScript for interactive elements.
-    *   `uploads/`: A directory for locally stored images, serving as a fallback or for development purposes when Supabase Storage is not fully configured.
-    *   `arrow.svg`, `favicon.ico`, `full-screen.svg`: Other static assets like icons.
-*   **`.env` File**: Stores sensitive configuration details and API keys, ensuring they are not committed to version control.
-*   **`tests/` Directory**: Contains all test files (`test_blog.py`, `conftest.py`) for verifying the application's functionality.
+*   **`app.py`**: The main Flask application file. It defines all the routes, handles HTTP requests, interacts with the Supabase backend, and renders Jinja2 templates. For video uploads, it receives the file and delegates the processing task to the background worker.
+*   **`worker.py`**: A background worker process that runs independently of the Flask app. It uses `APScheduler` to manage a queue of video processing jobs. Its sole responsibility is to take an uploaded video, process it, and update its status in the database.
+*   **`templates/` Directory**: Contains all the Jinja2 HTML templates. This includes a reusable `video_player.html` component that can be embedded in any post.
+*   **`static/` Directory**: Stores all static assets, including CSS, images, and the JavaScript files responsible for the uploader and the HLS video player.
+*   **`.env` File**: Stores sensitive configuration details and API keys.
+*   **`tests/` Directory**: Contains all test files for verifying the application's functionality, including tests for the video upload and playback flow.
+
+### Video Processing and Streaming Flow
+1.  **Upload**: An admin uploads a video file via the `/new` or `/edit` post page.
+2.  **Delegation**: The Flask app (`app.py`) saves the raw video to a temporary location in Supabase Storage and creates a corresponding record in the `videos` database table. It then queues a processing job with the video's ID in the background worker (`worker.py`).
+3.  **Background Processing**: The worker picks up the job, downloads the raw video, and sends it to an external `ffmpeg` service for transcoding into multiple quality levels suitable for HLS.
+4.  **Storage Update**: Once transcoding is complete, the worker updates the video's database record with the status `processed` and the path to the master HLS playlist (`.m3u8` file), which is also stored in Supabase Storage. The original raw video file is deleted.
+5.  **Playback**: When a user visits a post with a video, the `video_player.js` on the client-side uses `hls.js` to stream the video, automatically selecting the best quality based on the user's network conditions.
 
 The data flow typically involves:
 1.  A user's browser sends an HTTP request to the Flask application.
@@ -95,6 +108,7 @@ The data flow typically involves:
     SUPABASE_URL=your_supabase_project_url
     SUPABASE_KEY=your_supabase_anon_key_or_service_role_key
     BLOG_IMAGES_BUCKET=your_supabase_storage_bucket_name # e.g., blog_images
+    BLOG_VIDEOS_BUCKET=your_supabase_storage_bucket_name # e.g., blog_videos
     ```
     **Note**: For production, use a `SUPABASE_SERVICE_ROLE_KEY` and ensure it's kept secret. For local development, the anon key might suffice.
 
