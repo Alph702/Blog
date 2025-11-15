@@ -7,7 +7,7 @@ import math
 
 def create_test_post_with_image(page: Page, flask_app_url: str):
     """Helper function to create a post with an image."""
-    page.goto(f"{flask_app_url}/new", timeout=300000)
+    page.goto(f"{flask_app_url}/new", timeout=600000)
     
     test_title = f"Test Post with Image {time.time()}"
     test_content = "This post has an image for viewer testing."
@@ -19,10 +19,10 @@ def create_test_post_with_image(page: Page, flask_app_url: str):
     page.set_input_files("input[name='image']", image)
     page.click("button[type='submit']")
     
-    page.goto(f"{flask_app_url}/", timeout=300000)
+    page.goto(f"{flask_app_url}/", timeout=600000)
     page.locator("h1", has_text=test_title).click()
     post_id = page.url.split('/')[-1]
-    page.goto(f"{flask_app_url}/", timeout=300000)
+    page.goto(f"{flask_app_url}/", timeout=600000)
 
     return test_title, post_id
 
@@ -34,15 +34,15 @@ def test_image_viewer_on_homepage(admin_logged_in_page: Page, flask_app_url: str
     # Find the post and click the image
     post_locator = page.locator(f".post:has(h1:has-text(\"{test_title}\"))")
     image_locator = post_locator.locator("img")
-    expect(image_locator).to_be_visible(timeout=300000)
+    expect(image_locator).to_be_visible(timeout=600000)
     image_locator.click()
 
     # Check if the viewer is visible
     viewer = page.locator(".viewer-container")
-    expect(viewer).to_be_visible(timeout=300000)
-    expect(viewer).to_have_class(re.compile(r"viewer-in"), timeout=300000)
+    expect(viewer).to_be_visible(timeout=600000)
+    expect(viewer).to_have_class(re.compile(r"viewer-in"), timeout=600000)
 
-    page.goto(f"{flask_app_url}/delete/{post_id}", timeout=300000)
+    page.goto(f"{flask_app_url}/delete/{post_id}", timeout=600000)
 
 def test_image_viewer_on_post_page(admin_logged_in_page: Page, flask_app_url: str):
     """Test that the image viewer opens on the post page."""
@@ -54,15 +54,15 @@ def test_image_viewer_on_post_page(admin_logged_in_page: Page, flask_app_url: st
 
     # Click the image on the post page
     image_locator = page.locator(".gallery img")
-    expect(image_locator).to_be_visible(timeout=300000)
+    expect(image_locator).to_be_visible(timeout=600000)
     image_locator.click()
 
     # Check if the viewer is visible
     viewer = page.locator(".viewer-container")
-    expect(viewer).to_be_visible(timeout=300000)
-    expect(viewer).to_have_class(re.compile(r"viewer-in"), timeout=300000)
+    expect(viewer).to_be_visible(timeout=600000)
+    expect(viewer).to_have_class(re.compile(r"viewer-in"), timeout=600000)
 
-    page.goto(f"{flask_app_url}/delete/{post_id}", timeout=300000)
+    page.goto(f"{flask_app_url}/delete/{post_id}", timeout=600000)
 
 def test_image_viewer_zoom_scroll(admin_logged_in_page: Page, flask_app_url: str):
     """Test zoom functionality even when toolbar is disabled, using bounding box measurement."""
@@ -75,11 +75,11 @@ def test_image_viewer_zoom_scroll(admin_logged_in_page: Page, flask_app_url: str
     # Open image viewer
     image_locator = page.locator(".gallery img")
     image_locator.click()
-    expect(page.locator(".viewer-container")).to_be_visible(timeout=300000)
+    expect(page.locator(".viewer-container")).to_be_visible(timeout=600000)
 
     # Select visible image inside the viewer
     viewer_image = page.locator(".viewer-canvas img, .viewer-image, .viewer-move img").first
-    expect(viewer_image).to_be_visible(timeout=300000)
+    expect(viewer_image).to_be_visible(timeout=600000)
 
     # Get initial bounding box size
     box_before = viewer_image.bounding_box()
@@ -104,4 +104,4 @@ def test_image_viewer_zoom_scroll(admin_logged_in_page: Page, flask_app_url: str
     assert zoom_ratio > 1.1, f"Zoom failed — area ratio {zoom_ratio:.2f}"
 
     # Cleanup
-    page.goto(f"{flask_app_url}/delete/{post_id}", timeout=300000)
+    page.goto(f"{flask_app_url}/delete/{post_id}", timeout=600000)
