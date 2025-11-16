@@ -95,6 +95,8 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 TIMESTAMP_FIELD = None
 
+POSTS_PER_PAGE = 10
+
 
 def resolve_timestamp_field():
     global TIMESTAMP_FIELD
@@ -175,6 +177,27 @@ def check_persistent_login():
             print(f"Error checking persistent login: {e}")
             return redirect(url_for("home"))
 
+def fetch_video_data(video_id: int):
+    try:
+        video_resp = (
+            supabase_client.table("videos")
+            .select("filepath", "filename", "status")
+            .eq("id", video_id)
+            .single()
+            .execute()
+        )
+        video_record = video_resp.data
+        if video_record:
+            video_data = {
+                "id": video_id,
+                "filename": video_record.get("filename"),
+                "filepath": video_record.get("filepath"),
+                "status": video_record.get("status"),
+                "url": video_record.get("filepath"),
+            }
+            return video_data
+    except Exception as e:
+        print(f"Error fetching video info for video_id={video_id}: {e}") 
 
 @app.route("/")
 def home():
@@ -192,6 +215,7 @@ def home():
             supabase_client.table("posts")
             .select(select_fields)
             .order(TIMESTAMP_FIELD if TIMESTAMP_FIELD else "id", desc=True)
+            .limit(POSTS_PER_PAGE)
             .execute()
         )
         posts_data = response.data or []
@@ -217,28 +241,7 @@ def home():
         else:
             formatted_timestamp = ""
 
-        videodata = None
         video_id = post.get("video_id")
-        if video_id:
-            try:
-                video_resp = (
-                    supabase_client.table("videos")
-                    .select("filepath", "filename", "status")
-                    .eq("id", video_id)
-                    .single()
-                    .execute()
-                )
-                video_record = video_resp.data
-                if video_record:
-                    videodata = {
-                        "id": video_id,
-                        "filename": video_record.get("filename"),
-                        "filepath": video_record.get("filepath"),
-                        "status": video_record.get("status"),
-                        "url": video_record.get("filepath"),
-                    }
-            except Exception as e:
-                print(f"Error fetching video info for video_id={video_id}: {e}")
 
         posts.append(
             (
@@ -247,7 +250,7 @@ def home():
                 Markup(post.get("content", "")),
                 post.get("image"),
                 formatted_timestamp,
-                videodata,
+                fetch_video_data(video_id) if video_id else None,
             )
         )
 
@@ -312,7 +315,6 @@ def home():
         available_days=available_days,
         dark_mode=True,
     )
-
 
 @app.route("/filter", methods=["GET"])
 def filter_posts():
@@ -862,28 +864,7 @@ def view_post(post_id):
 
         image_url = post.get("image")
 
-        videodata = None
         video_id = post.get("video_id")
-        if video_id:
-            try:
-                video_resp = (
-                    supabase_client.table("videos")
-                    .select("filepath", "filename", "status")
-                    .eq("id", video_id)
-                    .single()
-                    .execute()
-                )
-                video_record = video_resp.data
-                if video_record:
-                    videodata = {
-                        "id": video_id,
-                        "filename": video_record.get("filename"),
-                        "filepath": video_record.get("filepath"),
-                        "status": video_record.get("status"),
-                        "url": video_record.get("filepath"),
-                    }
-            except Exception as e:
-                print(f"Error fetching video info for video_id={video_id}: {e}")
 
         return render_template(
             "post.html",
@@ -893,7 +874,7 @@ def view_post(post_id):
                 "content": Markup(post.get("content", "")),
                 "image": image_url,
                 "timestamp": formatted_timestamp,
-                "video": videodata,
+                "video": fetch_video_data(video_id) if video_id else None,
             },
             dark_mode=True,
         )
@@ -904,7 +885,7 @@ def view_post(post_id):
 @app.route("/admin/inspect")
 def admin_inspect():
     if "admin" not in session:
-        return jsonify({"error": "admin only"}), 403
+        return jsonify({"is_admin": False, "error": "admin only"}), 403
 
     # Mask the key for safety in logs/UI
     masked_key = None
@@ -939,7 +920,10 @@ def admin_inspect():
     except Exception as e:
         info["posts_count_error"] = str(e)
 
-    return jsonify(info)
+    return jsonify({
+        "is_admin": True,
+        "info": info
+    })
 
 
 @app.route("/uploads/<filename>")
@@ -947,6 +931,53 @@ def uploaded_file(filename):
     UPLOAD_FOLDER = "tmp/uploads"
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     return send_from_directory(UPLOAD_FOLDER, filename)
+
+# --- API ENDPOINTS --- #
+@app.route("/api/posts", methods=["GET"])
+def api_post():
+    try:
+        page = int(request.args.get("page", 1))
+    except (TypeError, ValueError):
+        page = 1
+    
+    offset = (page - 1) * POSTS_PER_PAGE
+
+    # Featch posts for requested page
+    res = supabase_client.table("posts").select("*").order(TIMESTAMP_FIELD, desc=True).offset(offset).limit(POSTS_PER_PAGE).execute()
+    posts_data = res.data or []
+
+    for post in posts_data:
+        ts_value = post.get(TIMESTAMP_FIELD) if TIMESTAMP_FIELD else None
+        if ts_value:
+            try:
+                dt_object = parser.parse(ts_value).replace(tzinfo=None)
+                formatted_timestamp = dt_object.strftime("%Y-%m-%d %I:%M %p")
+            except Exception:
+                formatted_timestamp = str(ts_value)
+        else:
+            formatted_timestamp = ""
+        post["formatted_timestamp"] = formatted_timestamp
+
+        video_id = post.get("video_id")
+        if video_id:
+            video_data = fetch_video_data(video_id)
+            post["video"] = video_data
+
+    # Check if there is a next page
+    res = supabase_client.table("posts").select("id").order(TIMESTAMP_FIELD, desc=True).offset(offset + POSTS_PER_PAGE).limit(1).execute()
+    has_next = bool(res.data)
+
+    return jsonify({
+        "posts": posts_data,
+        "has_next": has_next
+    })
+    
+@app.route("/api/check_admin", methods=["GET"])
+def api_check_admin():
+    if "admin" in session:
+        return jsonify({"is_admin": True})
+    else:
+        return jsonify({"is_admin": False})
 
 
 if __name__ == "__main__":
