@@ -1,4 +1,5 @@
 import os
+import signal
 import subprocess
 import time
 
@@ -63,7 +64,7 @@ def flask_app_url():
             ["taskkill", "/F", "/PID", str(process.pid)], capture_output=True
         )
     else:
-        os.killpg(os.getpgid(process.pid), subprocess.signal.SIGTERM)
+        os.killpg(os.getpgid(process.pid), signal.SIGTERM)
     print("Flask app stopped.")
 
 

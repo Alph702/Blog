@@ -817,11 +817,14 @@ def edit_post(post_id):
 
 @app.route("/check_session")
 def check_session():
-    return jsonify({"admin": session.get("admin", True)})
+    return jsonify({"admin": bool(session.get("admin", False))})
 
 
 @app.route("/set_session", methods=["POST"])
 def set_session():
+    if not session.get("admin"):
+        return jsonify({"error": "Forbidden"}), 403
+
     data = request.json
     if data.get("admin"):
         session["admin"] = True
