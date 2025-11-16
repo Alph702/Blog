@@ -45,7 +45,9 @@ def test_create_post_with_video(admin_logged_in_page: Page, flask_app_url):
     
     initial_video_url = video_player.get_attribute("data-url")
     assert initial_video_url, "Video player should have a data-url attribute"
-    assert "upload" in initial_video_url    # 3. Poll and wait for the video to be processed
+    assert "upload" in initial_video_url, "Initial video URL should reference the uploaded file"
+    
+    # 3. Poll and wait for the video to be processed
     post_link = post_locator.locator("a.post-button").first
     post_url = f"{flask_app_url}{post_link.get_attribute('href')}"
     post_id = post_url.split('/')[-1]
