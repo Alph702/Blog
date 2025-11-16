@@ -9,3 +9,5 @@ outputs/*
 tmp/*
 
 .pytest_cache/
+
+plans/*
