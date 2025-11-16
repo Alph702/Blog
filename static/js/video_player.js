@@ -324,8 +324,7 @@ document.addEventListener("DOMContentLoaded", () => {
             );
         });
 
-        if (pipBtn) {
-            // Check if PiP button exists (browser support)
+        if (pipBtn && document.pictureInPictureEnabled && !videoEl.disablePictureInPicture) {
             pipBtn.addEventListener("click", togglePip);
             videoEl.addEventListener("enterpictureinpicture", () =>
                 pipBtn.classList.add("active")
@@ -333,8 +332,7 @@ document.addEventListener("DOMContentLoaded", () => {
             videoEl.addEventListener("leavepictureinpicture", () =>
                 pipBtn.classList.remove("active")
             );
-        } else {
-            // Hide PiP button if not supported
+        } else if (pipBtn) {
             pipBtn.style.display = "none";
         }
 
