@@ -21,4 +21,9 @@ dependencies = [
 dev = [
     "playwright>=1.55.0",
     "pytest>=8.4.2",
+    "ruff>=0.14.5",
 ]
+
+[tool.ruff.format]
+quote-style = "double"
+docstring-code-format = true

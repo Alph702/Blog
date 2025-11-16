@@ -1,30 +1,31 @@
-import pytest
-from playwright.sync_api import Page, expect
 import os
-import time
 import re
-import math
+import time
+
+from playwright.sync_api import Page, expect
+
 
 def create_test_post_with_image(page: Page, flask_app_url: str):
     """Helper function to create a post with an image."""
     page.goto(f"{flask_app_url}/new", timeout=600000)
-    
+
     test_title = f"Test Post with Image {time.time()}"
     test_content = "This post has an image for viewer testing."
-    
+
     image = os.path.join(os.path.dirname(__file__), "test_viewer_image.png")
 
     page.fill("input[name='title']", test_title)
     page.fill("textarea[name='content']", test_content)
     page.set_input_files("input[name='image']", image)
     page.click("button[type='submit']")
-    
+
     page.goto(f"{flask_app_url}/", timeout=600000)
     page.locator("h1", has_text=test_title).click()
-    post_id = page.url.split('/')[-1]
+    post_id = page.url.split("/")[-1]
     page.goto(f"{flask_app_url}/", timeout=600000)
 
     return test_title, post_id
+
 
 def test_image_viewer_on_homepage(admin_logged_in_page: Page, flask_app_url: str):
     """Test that the image viewer opens on the homepage."""
@@ -32,7 +33,7 @@ def test_image_viewer_on_homepage(admin_logged_in_page: Page, flask_app_url: str
     test_title, post_id = create_test_post_with_image(page, flask_app_url)
 
     # Find the post and click the image
-    post_locator = page.locator(f".post:has(h1:has-text(\"{test_title}\"))")
+    post_locator = page.locator(f'.post:has(h1:has-text("{test_title}"))')
     image_locator = post_locator.locator("img")
     expect(image_locator).to_be_visible(timeout=600000)
     image_locator.click()
@@ -44,13 +45,14 @@ def test_image_viewer_on_homepage(admin_logged_in_page: Page, flask_app_url: str
 
     page.goto(f"{flask_app_url}/delete/{post_id}", timeout=600000)
 
+
 def test_image_viewer_on_post_page(admin_logged_in_page: Page, flask_app_url: str):
     """Test that the image viewer opens on the post page."""
     page = admin_logged_in_page
     test_title, post_id = create_test_post_with_image(page, flask_app_url)
 
     # Navigate to the post page
-    page.locator(f"a:has-text(\"{test_title}\")").click()
+    page.locator(f'a:has-text("{test_title}")').click()
 
     # Click the image on the post page
     image_locator = page.locator(".gallery img")
@@ -63,6 +65,7 @@ def test_image_viewer_on_post_page(admin_logged_in_page: Page, flask_app_url: st
     expect(viewer).to_have_class(re.compile(r"viewer-in"), timeout=600000)
 
     page.goto(f"{flask_app_url}/delete/{post_id}", timeout=600000)
+
 
 def test_image_viewer_zoom_scroll(admin_logged_in_page: Page, flask_app_url: str):
     """Test zoom functionality even when toolbar is disabled, using bounding box measurement."""
@@ -78,7 +81,9 @@ def test_image_viewer_zoom_scroll(admin_logged_in_page: Page, flask_app_url: str
     expect(page.locator(".viewer-container")).to_be_visible(timeout=600000)
 
     # Select visible image inside the viewer
-    viewer_image = page.locator(".viewer-canvas img, .viewer-image, .viewer-move img").first
+    viewer_image = page.locator(
+        ".viewer-canvas img, .viewer-image, .viewer-move img"
+    ).first
     expect(viewer_image).to_be_visible(timeout=600000)
 
     # Get initial bounding box size

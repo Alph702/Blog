@@ -1,18 +1,20 @@
-import pytest
-from playwright.sync_api import Page, expect
 import os
-import time
 import re
+import time
+
 from dotenv import load_dotenv
+from playwright.sync_api import Page, expect
 
 load_dotenv()
+
+
 def test_admin_login_logout(page: Page, flask_app_url):
     page.goto(f"{flask_app_url}/login", timeout=600000)
     expect(page).to_have_title("Login - Blog", timeout=600000)
 
     # Fill in correct credentials
-    page.fill("input[name='username']", os.getenv('ADMIN_USERNAME'))
-    page.fill("input[name='password']", os.getenv('ADMIN_PASSWORD'))
+    page.fill("input[name='username']", os.getenv("ADMIN_USERNAME"))
+    page.fill("input[name='password']", os.getenv("ADMIN_PASSWORD"))
     page.click("button[type='submit']")
 
     expect(page).to_have_url(f"{flask_app_url}/", timeout=600000)
@@ -24,6 +26,7 @@ def test_admin_login_logout(page: Page, flask_app_url):
     expect(page.locator("a", has_text="Login")).to_be_visible(timeout=600000)
     expect(page.locator("a", has_text="New Post")).not_to_be_visible(timeout=600000)
 
+
 def test_admin_login_incorrect_credentials(page: Page, flask_app_url):
     page.goto(f"{flask_app_url}/login", timeout=600000)
     expect(page).to_have_title("Login - Blog", timeout=600000)
@@ -33,22 +36,28 @@ def test_admin_login_incorrect_credentials(page: Page, flask_app_url):
     page.fill("input[name='password']", "wrongpass")
     page.click("button[type='submit']")
 
-    expect(page.locator(".error-message")).to_have_text("Invalid credentials", timeout=600000)
+    expect(page.locator(".error-message")).to_have_text(
+        "Invalid credentials", timeout=600000
+    )
     expect(page).to_have_url(f"{flask_app_url}/login", timeout=600000)
+
 
 def test_new_post_authorization(page: Page, flask_app_url):
     page.goto(f"{flask_app_url}/new", timeout=600000)
     expect(page).to_have_url(f"{flask_app_url}/login", timeout=600000)
+
 
 def test_delete_post_authorization(page: Page, flask_app_url):
     # Attempt to access delete endpoint directly
     page.goto(f"{flask_app_url}/delete/1", timeout=600000)
     expect(page).to_have_url(f"{flask_app_url}/login", timeout=600000)
 
+
 def test_admin_inspect_authorization(page: Page, flask_app_url):
     response = page.goto(f"{flask_app_url}/admin/inspect", timeout=600000)
-    expect(page.locator("body")).to_have_text("{\"error\":\"admin only\"}", timeout=600000)
+    expect(page.locator("body")).to_have_text('{"error":"admin only"}', timeout=600000)
     assert response.status == 403
+
 
 def test_create_and_view_post(admin_logged_in_page: Page, flask_app_url):
     page = admin_logged_in_page
@@ -68,11 +77,12 @@ def test_create_and_view_post(admin_logged_in_page: Page, flask_app_url):
     expect(page.locator("h1", has_text=test_title)).to_be_visible(timeout=600000)
 
     page.locator("a", has_text=test_title).click()
-    post_id = page.url.split('/')[-1]
+    post_id = page.url.split("/")[-1]
 
     expect(page.locator("h1")).to_have_text(test_title, timeout=600000)
     expect(page.locator("p").nth(1)).to_have_text(test_content, timeout=600000)
     page.goto(f"{flask_app_url}/delete/{post_id}", timeout=600000)
+
 
 def test_create_post_with_image(admin_logged_in_page: Page, flask_app_url):
     page = admin_logged_in_page
@@ -84,7 +94,9 @@ def test_create_post_with_image(admin_logged_in_page: Page, flask_app_url):
     image_path = os.path.join(os.path.dirname(__file__), "test_image.png")
 
     with open(image_path, "wb") as f:
-        f.write(b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\x0cIDATx\xda\xed\xc1\x01\x01\x00\x00\x00\xc2\xa0\xf7Om\x00\x00\x00\x00IEND\xaeB`\x82")
+        f.write(
+            b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\x0cIDATx\xda\xed\xc1\x01\x01\x00\x00\x00\xc2\xa0\xf7Om\x00\x00\x00\x00IEND\xaeB`\x82"
+        )
 
     page.fill("input[name='title']", test_title)
     page.fill("textarea[name='content']", test_content)
@@ -97,11 +109,12 @@ def test_create_post_with_image(admin_logged_in_page: Page, flask_app_url):
     expect(page.locator("h1", has_text=test_title)).to_be_visible(timeout=600000)
 
     page.locator("a", has_text=test_title).click()
-    post_id = page.url.split('/')[-1]
+    post_id = page.url.split("/")[-1]
     expect(page.locator(".image")).to_be_visible(timeout=600000)
 
     page.goto(f"{flask_app_url}/delete/{post_id}", timeout=600000)
     os.remove(image_path)
+
 
 def test_delete_post(admin_logged_in_page: Page, flask_app_url):
     page = admin_logged_in_page
@@ -118,10 +131,11 @@ def test_delete_post(admin_logged_in_page: Page, flask_app_url):
     page.goto(f"{flask_app_url}/", timeout=600000)
     expect(page.locator("h1", has_text=test_title)).to_be_visible(timeout=600000)
 
-    post_locator = page.locator(f".post:has(h1:has-text(\"{test_title}\"))")
+    post_locator = page.locator(f'.post:has(h1:has-text("{test_title}"))')
     post_locator.locator("a[href^='/delete/']").click()
     expect(page).to_have_url(f"{flask_app_url}/", timeout=600000)
     expect(page.locator("h1", has_text=test_title)).not_to_be_visible(timeout=600000)
+
 
 def test_remember_me_login_persistence(page: Page, flask_app_url):
     # Login with "remember me"
@@ -136,6 +150,7 @@ def test_remember_me_login_persistence(page: Page, flask_app_url):
     page.goto(f"{flask_app_url}/", timeout=600000)
     expect(page.locator("a", has_text="New Post")).to_be_visible(timeout=600000)
     expect(page.locator("a", has_text="Logout")).to_be_visible(timeout=600000)
+
 
 # Test for filtering posts (requires posts with different timestamps)
 # This test will be more effective if the database is pre-populated with diverse posts
@@ -153,9 +168,12 @@ def test_filter_posts_ui(admin_logged_in_page: Page, flask_app_url):
     page.select_option("#month", "any")
     page.select_option("#day", "any")
     page.click("button[type='submit']")
-    expect(page).to_have_url(re.compile(f"{flask_app_url}/filter.*year=any.*month=any.*day=any"), timeout=600000)
+    expect(page).to_have_url(
+        re.compile(f"{flask_app_url}/filter.*year=any.*month=any.*day=any"),
+        timeout=600000,
+    )
 
     page.locator(".filter-reset-btn").wait_for(state="visible", timeout=10000)
     page.evaluate("document.querySelector('.filter-reset-btn').click()")
-    page.wait_for_load_state('networkidle')
+    page.wait_for_load_state("networkidle")
     expect(page).to_have_url(f"{flask_app_url}/", timeout=600000)
