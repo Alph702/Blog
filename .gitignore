@@ -9,5 +9,4 @@ outputs/*
 tmp/*
 
 .pytest_cache/
-
-plans/*
+.ruff_cache/
