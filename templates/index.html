@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block content %}
-
+ 
 <div class="container Post-Container">
     <h1 class="title" style="font-size: 400%;">My Blog</h1>
     {% if 'admin' in session %}
@@ -59,6 +59,12 @@
             </div>
             <br>
             {% endif %}
+            {% if post[5] %}
+            <a>
+                {% from "components/video_player.html" import video_player %}
+                {{ video_player(post[5]) }}
+            </a>
+            {% endif %} 
             <small>Posted on {{ post[4] }}</small>
             <br>
             {% if 'admin' in session %}
@@ -67,7 +73,6 @@
             {% endif %}
         </div>
     </a>
-    <!-- <hr> -->
     {% endfor %}
 </div>
 {% endblock %}

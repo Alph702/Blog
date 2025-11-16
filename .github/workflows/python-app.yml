@@ -9,7 +9,7 @@ on:
 permissions:
   contents: read
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     env:
@@ -18,7 +18,8 @@ jobs:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPERBASE_SERVICE_ROLE_KEY: ${{ secrets.SUPERBASE_SERVICE_ROLE_KEY }}
       SUPABASE_ANON_KEY: ${{ secrets.SUPERBASE_ANON_KEY }}
-      SUPERBASE_S3_BUCKET_NAME: ${{ secrets.SUPERBASE_S3_BUCKET_NAME }}
+      SUPERBASE_IMAGES_BUCKET_NAME: ${{ secrets.SUPERBASE_IMAGES_BUCKET_NAME }}
+      SUPERBASE_VIDEOS_BUCKET_NAME: ${{ secrets.SUPERBASE_VIDEOS_BUCKET_NAME }}
 
     steps:
       - uses: actions/checkout@v4

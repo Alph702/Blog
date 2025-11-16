@@ -1,0 +1,59 @@
+{% macro video_player(video) %}
+<div class="video-container" data-id="{{ video.id }}">
+    <div class="play-overlay">
+        <img src="{{ url_for('static', filename='svg/play.svg') }}" alt="Play" class="play-overlay-icon">
+    </div>
+    <video
+        id="videoPlayer{{ video.id }}"
+        class="video-player"
+        preload="auto"
+        data-id="{{ video.id }}"
+        data-filename="{{ video.filename }}"
+        data-filepath="{{ video.filepath }}"
+        data-status="{{ video.status }}"
+        data-url="{{ video.url }}">
+    </video>
+    <div class="controls-overlay">
+        <div class="controls-bar">
+            <button class="play-pause-btn" aria-label="Play/Pause">
+                <img src="{{ url_for('static', filename='svg/play.svg') }}" alt="Play" class="play-icon">
+            </button>
+            <div class="progress-bar-container">
+                <input type="range" class="progress-bar" value="0" min="0" max="100" step="0.1">
+                <div class="time-display">
+                    <span class="current-time-display">00:00</span> / <span class="duration-display">00:00</span>
+                </div>
+            </div>
+            <div class="volume-container">
+                <button class="mute-btn" aria-label="Mute/Unmute">
+                    <img src="{{ url_for('static', filename='svg/volume-up.svg') }}" alt="Volume" class="volume-icon">
+                </button>
+                <input type="range" class="volume-slider" value="100" min="0" max="100">
+            </div>
+            <div class="playback-speed-selector">
+                <button class="speed-btn">1x</button>
+                <ul class="speed-options">
+                    <li data-speed="0.5">0.5x</li>
+                    <li data-speed="0.75">0.75x</li>
+                    <li data-speed="1">1x</li>
+                    <li data-speed="1.25">1.25x</li>
+                    <li data-speed="1.5">1.5x</li>
+                    <li data-speed="2">2x</li>
+                </ul>
+            </div>
+            <div class="quality-selector-container">
+                <button class="quality-btn" aria-label="Quality">
+                    <img src="{{ url_for('static', filename='svg/gear.svg') }}" alt="Quality" class="quality-icon">
+                </button>
+                <ul class="quality-options"></ul>
+            </div>
+            <button class="pip-btn" aria-label="Picture-in-Picture">
+                <img src="{{ url_for('static', filename='svg/pip.svg') }}" alt="PiP" class="pip-icon">
+            </button>
+            <button class="fullscreen-btn" aria-label="Fullscreen">
+                <img src="{{ url_for('static', filename='svg/fullscreen.svg') }}" alt="Fullscreen" class="fullscreen-icon">
+            </button>
+        </div>
+    </div>
+</div>
+{% endmacro %}

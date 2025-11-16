@@ -2,7 +2,7 @@
 
 {% block title %}{% if post.title %}{{ post.title }}{% else %}My Blog - A Great Post{% endif %}{% endblock %}
 
-{% block content %}
+{% block content %} 
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/post.css') }}">
 <div class="container">
     <h1>{{ post.title }}</h1>
@@ -14,6 +14,10 @@
             style="width: 90%" />
     </div>
     {% endif %}
+    {% if post.video %}
+    {% from "components/video_player.html" import video_player %}
+    {{ video_player(post.video) }}
+    {% endif %}
     <br />
 </div>
 <div class="Back-to-home-container">
@@ -22,5 +26,6 @@
         <samp id="text">Back to Home</samp>
     </a>
 </div>
+
 
 {% endblock %}

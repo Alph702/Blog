@@ -1,7 +1,11 @@
-run.py
-
 GEMINI.md
 .env
 .venv
 static/uploads/
-__pycache__/
+__pycache__ 
+
+uploads/*
+outputs/*
+tmp/*
+
+.pytest_cache/

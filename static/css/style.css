@@ -25,8 +25,11 @@
     --navbar-padding: 10px;
     --footer-padding: 10px;
 
+    --input-margin: 10px 0;
+
     --border-radius: 10px;
     --button-radius: 5px;
+
 
     --font-small: clamp(0.8rem, 2vw, 1rem);
     --font-medium: clamp(1rem, 2.5vw, 1.2rem);
@@ -138,13 +141,16 @@ form {
     box-shadow: 0 4px 6px var(--shadow);
     width: var(--form-width);
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 input,
 textarea {
     width: 90%;
     padding: var(--input-padding);
-    margin: 10px 0;
+    margin: var(--input-margin);
     border: 1px solid var(--input-border);
     border-radius: var(--button-radius);
     background-color: var(--input-bg);
@@ -228,7 +234,7 @@ li {
     background: rgba(255, 255, 255, 0);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-
+    z-index: 10;
     overflow: hidden;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
@@ -621,4 +627,97 @@ box {
 
 img {
     cursor: pointer;
+}
+
+
+.player {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--background-dark);
+    border-radius: var(--border-radius);
+}
+
+.vjs-quality-menu {
+    position: absolute;
+    bottom: 35px;
+    right: 0;
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    border-radius: 6px;
+    padding: 5px;
+    min-width: 120px;
+    z-index: 999;
+}
+
+.vjs-quality-menu button {
+    display: block;
+    background: none;
+    border: none;
+    color: white;
+    width: 100%;
+    text-align: left;
+    padding: 6px 10px;
+    cursor: pointer;
+}
+
+.vjs-quality-menu button:hover {
+    background: #333;
+}
+
+.vjs-quality-button .vjs-icon-cog:before {
+    font-size: 1.8em;
+    line-height: 1.67;
+}
+
+.video-js {
+    width: 90%;
+    /* max-width: ; */
+    height: auto;
+    border-radius: var(--border-radius);
+    box-shadow: 0 0 20px var(--shadow);
+}
+
+video {
+    border-radius: var(--border-radius);
+}
+
+.vjs-control-bar {
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+}
+
+/* Uploader */
+
+.uploader-title {
+    font-size: var(--font-large);
+    margin-bottom: 20px;
+    color: var(--primary-color);
+    letter-spacing: 1px;
+}
+
+.upload-box {
+    border: 2px dashed var(--primary-color);
+    border-radius: var(--border-radius);
+    background: var(--input-bg);
+    width: 90%;
+    margin: var(--input-margin);
+    transition: background 0.3s, border-color 0.3s;
+    cursor: pointer;
+    padding: var(--input-padding);
+}
+
+.upload-box.dragover {
+    background: rgba(0, 255, 0, 0.1);
+    border-color: var(--primary-hover);
+}
+
+.upload-box p {
+    font-size: var(--font-medium);
+    color: var(--footer-text);
+}
+
+.fileinput {
+    display: none;
 }
