@@ -39,7 +39,7 @@ jobs:
           uv run playwright install --with-deps chromium
 
       - name: Run linter
-        run: uv run lint
+        run: uv run ruff check . --fix
 
       - name: Run pytest
         run: uv run pytest -v --maxfail=3 --disable-warnings
