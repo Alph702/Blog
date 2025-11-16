@@ -4,7 +4,7 @@ import os
 import time
 
 def validate_test_video_file():
-    """Copies a small, dummy MP4 file for testing."""
+    """Validates and returns the path to the test video file."""
     source_filepath = "tests/assets/test_video.mp4"
     print(f"Current working directory: {os.getcwd()}")
     print(f"Checking for test video at: {os.path.abspath(source_filepath)}")
