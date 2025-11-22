@@ -942,6 +942,11 @@ def admin_inspect():
     return jsonify(info)
 
 
+@app.route("/.well-known/discord")
+def discord():
+    return "dh=175ade80c75dd4328c90e7002a7dcb81cad1821b"
+
+
 @app.route("/uploads/<filename>")
 def uploaded_file(filename):
     UPLOAD_FOLDER = "tmp/uploads"
