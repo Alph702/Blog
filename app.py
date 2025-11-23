@@ -177,6 +177,7 @@ def check_persistent_login():
             print(f"Error checking persistent login: {e}")
             return redirect(url_for("home"))
 
+
 def fetch_video_data(video_id: int):
     try:
         video_resp = (
@@ -197,7 +198,8 @@ def fetch_video_data(video_id: int):
             }
             return video_data
     except Exception as e:
-        print(f"Error fetching video info for video_id={video_id}: {e}") 
+        print(f"Error fetching video info for video_id={video_id}: {e}")
+
 
 @app.route("/")
 def home():
@@ -315,6 +317,7 @@ def home():
         available_days=available_days,
         dark_mode=True,
     )
+
 
 @app.route("/filter", methods=["GET"])
 def filter_posts():
@@ -920,10 +923,7 @@ def admin_inspect():
     except Exception as e:
         info["posts_count_error"] = str(e)
 
-    return jsonify({
-        "is_admin": True,
-        "info": info
-    })
+    return jsonify({"is_admin": True, "info": info})
 
 
 @app.route("/.well-known/discord")
@@ -937,6 +937,7 @@ def uploaded_file(filename):
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     return send_from_directory(UPLOAD_FOLDER, filename)
 
+
 # --- API ENDPOINTS --- #
 @app.route("/api/posts", methods=["GET"])
 def api_post():
@@ -944,7 +945,7 @@ def api_post():
         page = int(request.args.get("page", 1))
     except (TypeError, ValueError):
         page = 1
-    
+
     offset = max(0, (page - 1) * POSTS_PER_PAGE)
 
     select_fields = (
@@ -952,10 +953,17 @@ def api_post():
         if TIMESTAMP_FIELD
         else "id, title, content, image, video_id"
     )
-    
+
     try:
         # Fetch posts for requested page
-        res = supabase_client.table("posts").select(select_fields).order(TIMESTAMP_FIELD, desc=True).offset(offset).limit(POSTS_PER_PAGE).execute()
+        res = (
+            supabase_client.table("posts")
+            .select(select_fields)
+            .order(TIMESTAMP_FIELD, desc=True)
+            .offset(offset)
+            .limit(POSTS_PER_PAGE)
+            .execute()
+        )
         posts_data = res.data or []
 
         for post in posts_data:
@@ -976,18 +984,23 @@ def api_post():
                 post["video"] = video_data
 
         # Check if there is a next page
-        res = supabase_client.table("posts").select("id").order(TIMESTAMP_FIELD, desc=True).offset(offset + POSTS_PER_PAGE).limit(1).execute()
+        res = (
+            supabase_client.table("posts")
+            .select("id")
+            .order(TIMESTAMP_FIELD, desc=True)
+            .offset(offset + POSTS_PER_PAGE)
+            .limit(1)
+            .execute()
+        )
         has_next = bool(res.data)
 
-        return jsonify({
-            "posts": posts_data,
-            "has_next": has_next
-        })
+        return jsonify({"posts": posts_data, "has_next": has_next})
 
     except Exception as e:
         print(f"Error fetching posts in api_post: {e}")
         return jsonify({"error": "Failed to fetch posts", "details": str(e)}), 500
-    
+
+
 @app.route("/api/check_admin", methods=["GET"])
 def api_check_admin():
     if "admin" in session:
