@@ -229,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <a>
                             ${videoHTML}
                             </a>
-                            <small>Posted on ${new Date(post.timestamp).toLocaleDateString()}</small>
+                            <small>Posted on ${post.formatted_timestamp || (post.timestamp ? new Date(post.timestamp).toLocaleDateString() : '')}</small>
                             <br>
                             ${adminLinks}
                         </a>

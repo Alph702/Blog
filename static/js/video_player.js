@@ -216,7 +216,7 @@ function initializeVideoPlayer(container) {
 
     // --- Initialize HLS or Native Playback ---
     if (url && status === "processed") {
-        if (Hls.isSupported()) {
+        if (typeof Hls !== "undefined" && Hls.isSupported()) {
             hlsInstance = new Hls();
             hlsInstance.loadSource(url);
             hlsInstance.attachMedia(videoEl);

@@ -940,37 +940,48 @@ def api_post():
     except (TypeError, ValueError):
         page = 1
     
-    offset = (page - 1) * POSTS_PER_PAGE
+    offset = max(0, (page - 1) * POSTS_PER_PAGE)
 
-    # Featch posts for requested page
-    res = supabase_client.table("posts").select("*").order(TIMESTAMP_FIELD, desc=True).offset(offset).limit(POSTS_PER_PAGE).execute()
-    posts_data = res.data or []
+    select_fields = (
+        f"id, title, content, image, {TIMESTAMP_FIELD}, video_id"
+        if TIMESTAMP_FIELD
+        else "id, title, content, image, video_id"
+    )
+    
+    try:
+        # Fetch posts for requested page
+        res = supabase_client.table("posts").select(select_fields).order(TIMESTAMP_FIELD, desc=True).offset(offset).limit(POSTS_PER_PAGE).execute()
+        posts_data = res.data or []
 
-    for post in posts_data:
-        ts_value = post.get(TIMESTAMP_FIELD) if TIMESTAMP_FIELD else None
-        if ts_value:
-            try:
-                dt_object = parser.parse(ts_value).replace(tzinfo=None)
-                formatted_timestamp = dt_object.strftime("%Y-%m-%d %I:%M %p")
-            except Exception:
-                formatted_timestamp = str(ts_value)
-        else:
-            formatted_timestamp = ""
-        post["formatted_timestamp"] = formatted_timestamp
+        for post in posts_data:
+            ts_value = post.get(TIMESTAMP_FIELD) if TIMESTAMP_FIELD else None
+            if ts_value:
+                try:
+                    dt_object = parser.parse(ts_value).replace(tzinfo=None)
+                    formatted_timestamp = dt_object.strftime("%Y-%m-%d %I:%M %p")
+                except Exception:
+                    formatted_timestamp = str(ts_value)
+            else:
+                formatted_timestamp = ""
+            post["formatted_timestamp"] = formatted_timestamp
 
-        video_id = post.get("video_id")
-        if video_id:
-            video_data = fetch_video_data(video_id)
-            post["video"] = video_data
+            video_id = post.get("video_id")
+            if video_id:
+                video_data = fetch_video_data(video_id)
+                post["video"] = video_data
 
-    # Check if there is a next page
-    res = supabase_client.table("posts").select("id").order(TIMESTAMP_FIELD, desc=True).offset(offset + POSTS_PER_PAGE).limit(1).execute()
-    has_next = bool(res.data)
+        # Check if there is a next page
+        res = supabase_client.table("posts").select("id").order(TIMESTAMP_FIELD, desc=True).offset(offset + POSTS_PER_PAGE).limit(1).execute()
+        has_next = bool(res.data)
 
-    return jsonify({
-        "posts": posts_data,
-        "has_next": has_next
-    })
+        return jsonify({
+            "posts": posts_data,
+            "has_next": has_next
+        })
+
+    except Exception as e:
+        print(f"Error fetching posts in api_post: {e}")
+        return jsonify({"error": "Failed to fetch posts", "details": str(e)}), 500
     
 @app.route("/api/check_admin", methods=["GET"])
 def api_check_admin():
