@@ -1,17 +1,29 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
-
 
 class Config:
     """Configuration class to manage environment variables."""
 
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "dev_key")
-    SUPABASE_URL: str | None = os.getenv("SUPABASE_URL")
-    SUPABASE_KEY: str | None = os.getenv("SUPABASE_KEY")
-    BLOG_IMAGES_BUCKET: str = os.getenv("BLOG_IMAGES_BUCKET", "blog_images")
-    BLOG_VIDEOS_BUCKET: str = os.getenv("BLOG_VIDEOS_BUCKET", "blog_videos")
-    ADMIN_USERNAME: str | None = os.getenv("ADMIN_USERNAME")
-    ADMIN_PASSWORD: str | None = os.getenv("ADMIN_PASSWORD")
+    load_dotenv(".env")
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "UNDEFINED")
+    SUPABASE_URL: str = os.getenv("SUPABASE_URL", "UNDEFINED")
+    SUPABASE_KEY: str = os.getenv("SUPABASE_KEY", "UNDEFINED")
+    BLOG_IMAGES_BUCKET: str = os.getenv("BLOG_IMAGES_BUCKET", "UNDEFINED")
+    BLOG_VIDEOS_BUCKET: str = os.getenv("BLOG_VIDEOS_BUCKET", "UNDEFINED")
+    ADMIN_USERNAME: str = os.getenv("ADMIN_USERNAME", "UNDEFINED")
+    ADMIN_PASSWORD: str = os.getenv("ADMIN_PASSWORD", "UNDEFINED")
     POSTS_PER_PAGE: int = 10
+    ALLOWED_EXTENSIONS = {
+        "png",
+        "jpg",
+        "jpeg",
+        "gif",
+        "bmp",
+        "webp",
+        "mp4",
+        "mov",
+        "avi",
+        "mkv",
+        "webm",
+    }
