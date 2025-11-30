@@ -6,10 +6,12 @@ from datetime import datetime, timedelta
 import pytz
 import logging
 
-logger = logging.getLogger('auth.service')
+logger = logging.getLogger("auth.service")
+
 
 class AuthService:
     def __init__(self, user_repo: UserRepository):
+        logger.debug("Initializing AuthService")
         self.repo = user_repo
 
     def authenticate(self, username: str, password: str) -> bool:
@@ -17,7 +19,9 @@ class AuthService:
         try:
             from config import Config
 
-            return username == Config.ADMIN_USERNAME and password == Config.ADMIN_PASSWORD
+            return (
+                username == Config.ADMIN_USERNAME and password == Config.ADMIN_PASSWORD
+            )
         except Exception as e:
             logger.error(f"Authentication failed: {e}")
             raise Exception("Authentication error")
@@ -39,11 +43,12 @@ class AuthService:
         """Checks if the provided token is valid and not expired."""
         if not token:
             return False
-        
-        try:
 
+        try:
             hashed_token: str = hashlib.sha256(token.encode()).hexdigest()
-            login: Optional[Dict[str, Any]] = self.repo.get_persistent_login(hashed_token)
+            login: Optional[Dict[str, Any]] = self.repo.get_persistent_login(
+                hashed_token
+            )
 
             if not login:
                 return False
@@ -64,3 +69,6 @@ class AuthService:
         except Exception as e:
             logger.error(f"Failed to revoke token: {e}")
             raise Exception("Token revocation failed")
+
+    def __del__(self):
+        logger.debug("Destroying AuthService instance")

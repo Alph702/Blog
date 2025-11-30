@@ -1,13 +1,14 @@
 from typing import List, Dict, Any, Optional, cast
 from repositories import PostRepository
-from .video_service import VideoService 
+from .video_service import VideoService
 from dateutil import parser
 from config import Config
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 import logging
 
-logger = logging.getLogger('post.service')
+logger = logging.getLogger("post.service")
+
 
 class PostService:
     def __init__(self, repo: PostRepository, video_service: VideoService):
@@ -39,8 +40,10 @@ class PostService:
                         cast(str, post.get("created_time")),
                     )
                     if post.get("video_id"):
-                        post["video"] = self.video_service.get_video_by_id(post["video_id"])
-                    
+                        post["video"] = self.video_service.get_video_by_id(
+                            post["video_id"]
+                        )
+
                     logger.debug(f"Post: {post}")
             except Exception as e:
                 logger.error(f"Error processing posts: {e}")
@@ -68,7 +71,9 @@ class PostService:
                         cast(str, post.get("created_time")),
                     )
                     if post.get("video_id"):
-                        post["video"] = self.video_service.get_video_by_id(post["video_id"])
+                        post["video"] = self.video_service.get_video_by_id(
+                            post["video_id"]
+                        )
                     return post
                 else:
                     logger.warning(f"Post with ID {post_id} not found")
@@ -110,7 +115,7 @@ class PostService:
             try:
                 res = self.repo.create(data)
             except Exception as e:
-                if getattr(e, 'code', None) == '23505':  # Unique violation
+                if getattr(e, "code", None) == "23505":  # Unique violation
                     logger.warning("Post with the same id already exists.")
                     raise ValueError("Post with the same id already exists.")
                 else:
@@ -133,7 +138,9 @@ class PostService:
         video_file: Optional[FileStorage] = None,
     ) -> Optional[Dict[str, Any]]:
         try:
-            logger.debug(f"Updating post ID {post_id} with title: {title}, content length: {len(content)}")
+            logger.debug(
+                f"Updating post ID {post_id} with title: {title}, content length: {len(content)}"
+            )
             try:
                 post_data = self.get_post_by_id(post_id)
                 if not post_data:
@@ -157,7 +164,7 @@ class PostService:
             except Exception as e:
                 logger.error(f"Error uploading image: {e}")
                 raise
-            
+
             try:
                 if video_file:
                     video_id = self.video_service.upload_video(video_file)
@@ -185,7 +192,9 @@ class PostService:
     ) -> List[Dict[str, Any]]:
         try:
             try:
-                logger.debug(f"Filtering posts by date - Year: {year}, Month: {month}, Day: {day}, Page: {page}")
+                logger.debug(
+                    f"Filtering posts by date - Year: {year}, Month: {month}, Day: {day}, Page: {page}"
+                )
                 posts: List[Dict[str, Any]] = self.repo.filter_by_date(
                     year,
                     month,
@@ -206,7 +215,9 @@ class PostService:
                         cast(str, post.get("created_time")),
                     )
                     if post.get("video_id"):
-                        post["video"] = self.video_service.get_video_by_id(post["video_id"])
+                        post["video"] = self.video_service.get_video_by_id(
+                            post["video_id"]
+                        )
             except Exception as e:
                 logger.error(f"Error processing filtered posts: {e}")
                 raise
@@ -241,7 +252,7 @@ class PostService:
             raise Exception("Failed to upload image.")
 
     def has_next_page(self, page: int) -> bool:
-        try:            
+        try:
             logger.debug(f"Checking for next page after page {page}")
             return self.repo.has_next_page(page)
         except Exception as e:

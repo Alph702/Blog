@@ -27,6 +27,7 @@ def view_post(post_id: int):
     post = post_service.get_post_by_id(post_id)
     return render_template("post.html", post=post)
 
+
 @blog_bp.route("/<path:path>")
 def serve_static(path: str):
     return send_from_directory(directory="static", path=path)

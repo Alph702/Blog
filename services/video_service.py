@@ -4,12 +4,14 @@ from repositories import VideoRepository
 from services.worker_service import WorkerService
 import logging
 
-logger = logging.getLogger('video.service')
+logger = logging.getLogger("video.service")
+
 
 class VideoService:
     """Service for handling video-related operations."""
 
     def __init__(self, video_repo: VideoRepository, worker_service: WorkerService):
+        logger.debug("Initializing VideoService")
         self.repo = video_repo
         self.worker = worker_service
 
@@ -30,3 +32,6 @@ class VideoService:
         except Exception as e:
             logger.error(f"Failed to fetch video with ID {video_id}: {e}")
             raise Exception("Video retrieval failed")
+
+    def __del__(self):
+        logger.debug("Destroying VideoService instance")

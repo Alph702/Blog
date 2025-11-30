@@ -4,7 +4,12 @@ from logging.handlers import RotatingFileHandler
 from flask import Flask
 from typing import Optional
 
-def setup_logging(app: Optional[Flask] = None, log_file: Optional[str] = "app.log", level: int = logging.INFO):
+
+def setup_logging(
+    app: Optional[Flask] = None,
+    log_file: Optional[str] = "app.log",
+    level: int = logging.INFO,
+):
     """
     Sets up the logging configuration for the application.
 
@@ -30,7 +35,7 @@ def setup_logging(app: Optional[Flask] = None, log_file: Optional[str] = "app.lo
     # 1. Console Handler: Outputs logs to stderr
     console_handler = logging.StreamHandler()
     console_formatter = logging.Formatter(
-        '{%(asctime)s} - [%(levelname)s] in %(module)s - (%(name)s) -- [%(filename)s::%(funcName)s:%(lineno)d]: %(message)s'
+        "{%(asctime)s} - [%(levelname)s] in %(module)s - (%(name)s) -- [%(filename)s::%(funcName)s:%(lineno)d]: %(message)s"
     )
     console_handler.setFormatter(console_formatter)
     target_logger.addHandler(console_handler)
@@ -38,7 +43,7 @@ def setup_logging(app: Optional[Flask] = None, log_file: Optional[str] = "app.lo
     file_path = ""
     # 2. File Handler: Outputs logs to a rotating file
     if log_file:
-        log_dir = os.path.join(os.getcwd(), 'logs')
+        log_dir = os.path.join(os.getcwd(), "logs")
         os.makedirs(log_dir, exist_ok=True)
         file_path = os.path.join(log_dir, log_file)
 
@@ -46,19 +51,23 @@ def setup_logging(app: Optional[Flask] = None, log_file: Optional[str] = "app.lo
         file_handler = RotatingFileHandler(
             file_path,
             maxBytes=1024 * 1024 * 10,  # 10 MB per log file
-            backupCount=5,              # Keep up to 5 backup log files
-            encoding='utf-8'
+            backupCount=5,  # Keep up to 5 backup log files
+            encoding="utf-8",
         )
         file_formatter = logging.Formatter(
-            '{%(asctime)s} - [%(levelname)s] in %(module)s - (%(name)s) -- [%(filename)s::%(funcName)s:%(lineno)d]: %(message)s'
+            "{%(asctime)s} - [%(levelname)s] in %(module)s - (%(name)s) -- [%(filename)s::%(funcName)s:%(lineno)d]: %(message)s"
         )
         file_handler.setFormatter(file_formatter)
         target_logger.addHandler(file_handler)
 
     # Suppress verbose loggers from external libraries if not in DEBUG mode
     if level > logging.DEBUG:
-        logging.getLogger('werkzeug').setLevel(logging.WARNING) # Flask's internal web server
-        logging.getLogger('supabase').setLevel(logging.WARNING) # Supabase client library
+        logging.getLogger("werkzeug").setLevel(
+            logging.WARNING
+        )  # Flask's internal web server
+        logging.getLogger("supabase").setLevel(
+            logging.WARNING
+        )  # Supabase client library
 
     target_logger.info(f"Logging configured with level: {logging.getLevelName(level)}")
     if log_file:

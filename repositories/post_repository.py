@@ -70,7 +70,9 @@ class PostRepository:
     def update(self, post_id: int, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Update an existing post."""
         try:
-            response = self.client.table("posts").update(data).eq("id", post_id).execute()
+            response = (
+                self.client.table("posts").update(data).eq("id", post_id).execute()
+            )
             if getattr(response, "error", None):
                 raise RuntimeError(
                     f"Error updating post: {getattr(response, 'error', 'Unknown error')}"

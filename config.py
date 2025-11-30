@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 import logging
 
+
 class Config:
     """Configuration class to manage environment variables."""
 
@@ -30,8 +31,8 @@ class Config:
         "webm",
     }
 
-    LOG_LEVEL: str = os.getenv('LOG_LEVEL', 'INFO').upper()
-    LOG_FILE: str = os.getenv('LOG_FILE', 'app.log')
+    LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO").upper()
+    LOG_FILE: str = os.getenv("LOG_FILE", "app.log")
 
     @property
     def LOGGING_LEVEL(self) -> int:

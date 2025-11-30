@@ -24,10 +24,14 @@ required_env_vars = {
     "BLOG_VIDEOS_BUCKET": Config.BLOG_VIDEOS_BUCKET,
 }
 
-missing_env_vars: list[str] = [name for name, value in required_env_vars.items() if value == "UNDEFINED"]
+missing_env_vars: list[str] = [
+    name for name, value in required_env_vars.items() if value == "UNDEFINED"
+]
 
 if missing_env_vars:
-    raise EnvironmentError(f"Missing environment variables: {', '.join(missing_env_vars)}")
+    raise EnvironmentError(
+        f"Missing environment variables: {', '.join(missing_env_vars)}"
+    )
 
 # Initialize Supabase Client
 supabase_client: Client = create_client(Config.SUPABASE_URL, Config.SUPABASE_KEY)
