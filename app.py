@@ -1,10 +1,13 @@
 from flask import Flask
 from config import Config
 import blueprints
+from utils.logger import setup_logging
 
 app: Flask = Flask(__name__)
 app.config.from_object(Config)
 app.secret_key = Config.SECRET_KEY
+
+main_logger = setup_logging(app, log_file=Config.LOG_FILE, level=Config().LOGGING_LEVEL)
 
 # Register Blueprints
 app.register_blueprint(blueprints.auth_bp)

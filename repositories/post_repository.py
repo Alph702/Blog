@@ -67,10 +67,16 @@ class PostRepository:
         except Exception as e:
             raise RuntimeError(f"Error creating post: {e}")
 
-    def update(self, post_id: int, data: Dict[str, Any]):
+    def update(self, post_id: int, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Update an existing post."""
         try:
-            self.client.table("posts").update(data).eq("id", post_id).execute()
+            response = self.client.table("posts").update(data).eq("id", post_id).execute()
+            if getattr(response, "error", None):
+                raise RuntimeError(
+                    f"Error updating post: {getattr(response, 'error', 'Unknown error')}"
+                )
+            records = self._extract_records(getattr(response, "data", None))
+            return records[0] if records else None
         except Exception as e:
             raise RuntimeError(f"Error updating post: {e}")
 
@@ -134,7 +140,8 @@ class PostRepository:
                     )
                     image_url = f"{Config.SUPABASE_URL}/storage/v1/object/public/{Config.BLOG_IMAGES_BUCKET}/{file_name}"
                 except Exception as e:
-                    if getattr(e, "status", "unknown") == 409:
+                    print(getattr(e, "status", "unknown"))
+                    if int(getattr(e, "status", "unknown")) == 409:
                         image_url = f"{Config.SUPABASE_URL}/storage/v1/object/public/{Config.BLOG_IMAGES_BUCKET}/{file_name}"
                     else:
                         image_url = None
@@ -143,7 +150,7 @@ class PostRepository:
                         )
             except Exception as e:
                 image_url = None
-                raise RuntimeError(f"Failed to upload file to Supabase storage: {e}")
+                raise RuntimeError(e)
             return image_url
         return None
 

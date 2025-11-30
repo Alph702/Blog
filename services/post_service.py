@@ -34,7 +34,23 @@ class PostService:
         return posts
 
     def get_post_by_id(self, post_id: int) -> Optional[Dict[str, Any]]:
-        return self.repo.get_by_id(post_id)
+        try:
+            post = self.repo.get_by_id(post_id)
+            if post:
+                post["timestamps"] = self._format_date(
+                    cast(int, post.get("created_year")),
+                    cast(int, post.get("created_month")),
+                    cast(int, post.get("created_day")),
+                    cast(str, post.get("created_time")),
+                )
+                if post.get("video_id"):
+                    post["video"] = self.video_service.get_video_by_id(post["video_id"])
+                return post
+            else:
+                raise ValueError("Post not found")
+        except Exception as e:
+            print(f"Error retrieving post by ID {post_id}: {e}")
+            return None
 
     def create_post(
         self,
@@ -49,17 +65,38 @@ class PostService:
             "content": content,
             "image": image_url,
             "video_id": video_id,
-            "year": timestamp["Year"],
-            "month": timestamp["Month"],
-            "day": timestamp["Day"],
-            "time": timestamp["Time"],
+            "created_year": timestamp["Year"],
+            "created_month": timestamp["Month"],
+            "created_day": timestamp["Day"],
+            "created_time": timestamp["Time"],
         }
         return self.repo.create(data)
 
-    # TODO: Implement update_post method
-    def update_post(self, post_id: int, form_data, files):
-        # Business logic for updating
-        pass
+    def update_post(
+        self,
+        post_id: int,
+        title: Optional[str],
+        content: str,
+        image_file: Optional[FileStorage] = None,
+        video_file: Optional[FileStorage] = None,
+    ) -> Optional[Dict[str, Any]]:
+        post_data = self.get_post_by_id(post_id)
+        if not post_data:
+            return None
+
+        update_data = {"title": title, "content": content}
+
+        if image_file:
+            image_url = self.upload_image(image_file)
+            if image_url:
+                update_data["image"] = image_url
+
+        if video_file:
+            video = self.video_service.upload_video(video_file)
+            if video:
+                update_data["video_id"] = video["id"]
+
+        return self.repo.update(post_id, update_data)
 
     def filter_posts(
         self, year: str, month: str, day: str, page: int = 1
@@ -75,10 +112,10 @@ class PostService:
 
         for post in posts:
             post["formatted_timestamp"] = self._format_date(
-                cast(int, post.get("year")),
-                cast(int, post.get("month")),
-                cast(int, post.get("day")),
-                cast(str, post.get("time")),
+                cast(int, post.get("created_year")),
+                cast(int, post.get("created_month")),
+                cast(int, post.get("created_day")),
+                cast(str, post.get("created_time")),
             )
             if post.get("video_id"):
                 post["video"] = self.video_service.get_video_by_id(post["video_id"])

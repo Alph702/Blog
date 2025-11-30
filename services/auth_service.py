@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import pytz
 
 
+
 class AuthService:
     def __init__(self, user_repo: UserRepository):
         self.repo = user_repo
@@ -14,6 +15,7 @@ class AuthService:
         """Simple authentication against predefined admin credentials."""
         from config import Config
 
+        # Use check_password_hash to compare the provided password with the stored hash
         return username == Config.ADMIN_USERNAME and password == Config.ADMIN_PASSWORD
 
     def create_persistent_token(self, user_id: str) -> str:

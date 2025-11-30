@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Any, Dict, Optional, cast
+from postgrest import APIResponse
 from requests import Response
 import requests
 from werkzeug.datastructures import FileStorage
@@ -41,11 +42,8 @@ class WorkerService:
         ).execute()
 
         # Get ID
-        response = cast(
-            Dict[str, Any],
-            self.client.table("videos").select("id").eq("filepath", filepath).execute(),
-        )
-        data = response.get("data")
+        response = cast("APIResponse", self.client.table("videos").select("id").eq("filepath", filepath).execute())
+        data = response.data
         file_id: Optional[int] = None
         if isinstance(data, list) and data:
             first_row = data[0]

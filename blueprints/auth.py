@@ -9,6 +9,7 @@ from flask import (
 )
 from container import auth_service
 
+
 auth_bp: Blueprint = Blueprint("auth", __name__)
 
 
@@ -17,7 +18,7 @@ def login():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
-        remember = request.form.get("remember")
+        remember = request.form.get("remember_me")
 
         if auth_service.authenticate(username, password):
             session["admin"] = True

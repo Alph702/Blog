@@ -6,7 +6,7 @@
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/post.css') }}">
 <div class="container">
     <h1>{{ post.title }}</h1>
-    <p><strong>Published:</strong> {{ post.timestamp }}</p>
+    <p class="timestamp" data-ts="{{ post.timestamps }}">Posted on ...</p>
     <p>{{ post.content | safe }}</p>
     {% if post.image %}
     <div class="gallery">

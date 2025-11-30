@@ -18,23 +18,23 @@ export class VideoPlayer {
     }
 
     initControls() {
-        this.playOverlay = container.querySelector(".play-overlay");
-        this.playPauseBtn = container.querySelector(".play-pause-btn");
-        this.playPauseIcon = playPauseBtn.querySelector(".play-icon");
-        this.progressBar = container.querySelector(".progress-bar");
-        this.currentTimeDisplay = container.querySelector(".current-time-display");
-        this.durationDisplay = container.querySelector(".duration-display");
-        this.muteBtn = container.querySelector(".mute-btn");
-        this.volumeIcon = muteBtn.querySelector(".volume-icon");
-        this.volumeSlider = container.querySelector(".volume-slider");
-        this.fullscreenBtn = container.querySelector(".fullscreen-btn");
-        this.fullscreenIcon = fullscreenBtn.querySelector(".fullscreen-icon");
-        this.qualityBtn = container.querySelector(".quality-btn");
-        this.qualityOptionsUl = container.querySelector(".quality-options");
-        this.speedBtn = container.querySelector(".speed-btn");
-        this.speedOptionsUl = container.querySelector(".speed-options");
-        this.pipBtn = container.querySelector(".pip-btn");
-        this.controlsOverlay = container.querySelector(".controls-overlay");
+        this.playOverlay = this.container.querySelector(".play-overlay");
+        this.playPauseBtn = this.container.querySelector(".play-pause-btn");
+        this.playPauseIcon = this.playPauseBtn.querySelector(".play-icon");
+        this.progressBar = this.container.querySelector(".progress-bar");
+        this.currentTimeDisplay = this.container.querySelector(".current-time-display");
+        this.durationDisplay = this.container.querySelector(".duration-display");
+        this.muteBtn = this.container.querySelector(".mute-btn");
+        this.volumeIcon = this.muteBtn.querySelector(".volume-icon");
+        this.volumeSlider = this.container.querySelector(".volume-slider");
+        this.fullscreenBtn = this.container.querySelector(".fullscreen-btn");
+        this.fullscreenIcon = this.fullscreenBtn.querySelector(".fullscreen-icon");
+        this.qualityBtn = this.container.querySelector(".quality-btn");
+        this.qualityOptionsUl = this.container.querySelector(".quality-options");
+        this.speedBtn = this.container.querySelector(".speed-btn");
+        this.speedOptionsUl = this.container.querySelector(".speed-options");
+        this.pipBtn = this.container.querySelector(".pip-btn");
+        this.controlsOverlay = this.container.querySelector(".controls-overlay");
 
         // --- Event Listeners ---
         this.playOverlay.addEventListener("click", this.togglePlayPause);

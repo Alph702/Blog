@@ -1,14 +1,16 @@
 import os
 from dotenv import load_dotenv
-
+import logging
 
 class Config:
     """Configuration class to manage environment variables."""
 
     load_dotenv()
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "UNDEFINED")
+    SECRET_KEY: str = os.getenv("SECRET_KEY") or os.urandom(24).hex()
     SUPABASE_URL: str = os.getenv("SUPABASE_URL", "UNDEFINED")
-    SUPABASE_KEY: str = os.getenv("SUPABASE_KEY" or "SUPABASE_ANON_KEY", "UNDEFINED")
+    SUPABASE_KEY: str = os.getenv("SUPABASE_KEY") or os.getenv(
+        "SUPABASE_ANON_KEY", "UNDEFINED"
+    )
     BLOG_IMAGES_BUCKET: str = os.getenv("BLOG_IMAGES_BUCKET", "UNDEFINED")
     BLOG_VIDEOS_BUCKET: str = os.getenv("BLOG_VIDEOS_BUCKET", "UNDEFINED")
     ADMIN_USERNAME: str = os.getenv("ADMIN_USERNAME", "UNDEFINED")
@@ -27,3 +29,11 @@ class Config:
         "mkv",
         "webm",
     }
+
+    LOG_LEVEL: str = os.getenv('LOG_LEVEL', 'INFO').upper()
+    LOG_FILE: str = os.getenv('LOG_FILE', 'app.log')
+
+    @property
+    def LOGGING_LEVEL(self) -> int:
+        """Converts the LOG_LEVEL string to a logging module constant."""
+        return getattr(logging, self.LOG_LEVEL, logging.INFO)

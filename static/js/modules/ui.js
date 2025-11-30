@@ -62,74 +62,62 @@ export const initLazyPostLoading = () => {
     const postsContainer = document.getElementById('posts-container');
     const loadingIndicator = document.getElementById('loading-indicator');
     const endOfPostsMessage = document.getElementById('end-of-posts-message');
-
-    if (!postsContainer) return;
-
-    window.addEventListener('scroll', () => {
-        // Load more posts when the user is 100px from the bottom
-        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100) {
-            loadMorePosts(postsContainer, loadingIndicator, endOfPostsMessage);
-        }
-    });
-}
-
-/** Loads more posts and appends them to the container.
- * @param {HTMLElement} postsContainer 
- * @param {HTMLElement} loadingIndicator 
- * @param {HTMLElement} endOfPostsMessage 
- */
-const loadMorePosts = async (postsContainer, loadingIndicator, endOfPostsMessage) => {
-
     let page = 2; // Start with page 2, since page 1 is loaded initially
     let isLoading = false;
     let hasNext = true;
 
-    if (isLoading || !hasNext) return;
+    if (!postsContainer) return;
 
-    isLoading = true;
-    loadingIndicator.style.display = 'flex';
-    loadingIndicator.style.alignItems = 'center';
-    loadingIndicator.style.alignContent = 'center';
-    loadingIndicator.style.justifyContent = 'center';
+    const loadMorePosts = async () => {
 
-    try {
-        const response = await fetch(`/api/posts?page=${page}`);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
 
-        if (data.posts && data.posts.length > 0) {
-            const isAdmin = await fetch('/api/check_admin')
-                .then(res => res.json())
-                .then(resData => resData.is_admin)
-                .catch(() => false);
-            data.posts.forEach(post => {
-                const postLink = document.createElement('div');
-                postLink.className = 'post';
 
-                let adminLinks = '';
-                if (isAdmin) {
-                    adminLinks = `
+        if (isLoading || !hasNext) return;
+
+        isLoading = true;
+        loadingIndicator.style.display = 'flex';
+        loadingIndicator.style.alignItems = 'center';
+        loadingIndicator.style.alignContent = 'center';
+        loadingIndicator.style.justifyContent = 'center';
+
+        try {
+            const response = await fetch(`/api/posts?page=${page}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+
+            if (data.posts && data.posts.length > 0) {
+                const isAdmin = await fetch('/api/check_admin')
+                    .then(res => res.json())
+                    .then(resData => resData.is_admin)
+                    .catch(() => false);
+                data.posts.forEach(post => {
+                    const postLink = document.createElement('div');
+                    postLink.className = 'post';
+
+                    let adminLinks = '';
+                    if (isAdmin) {
+                        adminLinks = `
                             <a style="padding-right: 5px;" href="/edit/${post.id}">Edit</a>
                             <a href="/delete/${post.id}">Delete</a>
                         `;
-                }
+                    }
 
-                let imageHTML = '';
-                if (post.image) {
-                    imageHTML = `
+                    let imageHTML = '';
+                    if (post.image) {
+                        imageHTML = `
                             <div class="gallery">
                                 <img src="${post.image}" alt="Post Image" class="image" loading="lazy">
                             </div>
                             <br>
                         `;
-                }
+                    }
 
-                let videoHTML = '';
-                if (post.video) {
-                    const video = post.video;
-                    videoHTML = `
+                    let videoHTML = '';
+                    if (post.video) {
+                        const video = post.video;
+                        videoHTML = `
                             <div class="video-container" data-id="${video.id}">
                                 <div class="play-overlay">
                                     <img src="/static/svg/play.svg" alt="Play" class="play-overlay-icon">
@@ -188,9 +176,9 @@ const loadMorePosts = async (postsContainer, loadingIndicator, endOfPostsMessage
                                 </div>
                             </div>
                         `;
-                }
+                    }
 
-                postLink.innerHTML = `
+                    postLink.innerHTML = `
                         <a href="/post/${post.id}" class="post-button">
                             <h1 class="Heding">${post.title}</h1>
                             <p class="text">${post.content}</p>
@@ -199,39 +187,47 @@ const loadMorePosts = async (postsContainer, loadingIndicator, endOfPostsMessage
                             ${videoHTML}
                             </a>
                             <small>Posted on ${post.timestamps ? new Date(post.timestamps).toLocaleDateString(undefined, {
-                    year: 'numeric',
-                    month: 'numeric',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: true // * set to false if you prefer 24-hour format
-                }) : ''}</small>
+                        year: 'numeric',
+                        month: 'numeric',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true // * set to false if you prefer 24-hour format
+                    }) : ''}</small>
                             <br>
                             ${adminLinks}
                         </a>
                     `;
-                postsContainer.appendChild(postLink);
+                    postsContainer.appendChild(postLink);
 
-                if (post.video) {
-                    const newVideoContainer = postLink.querySelector('.video-container');
-                    if (newVideoContainer && typeof initializeVideoPlayer === 'function') {
-                        initializeVideoPlayer(newVideoContainer);
+                    if (post.video) {
+                        const newVideoContainer = postLink.querySelector('.video-container');
+                        if (newVideoContainer && typeof initializeVideoPlayer === 'function') {
+                            initializeVideoPlayer(newVideoContainer);
+                        }
                     }
-                }
-            });
-            page++;
-        }
+                });
+                page++;
+            }
 
-        hasNext = data.has_next;
-        if (!hasNext) {
-            endOfPostsMessage.style.display = 'block';
-        }
+            hasNext = data.has_next;
+            if (!hasNext) {
+                endOfPostsMessage.style.display = 'block';
+            }
 
-    } catch (error) {
-        console.error("Failed to load more posts:", error);
-        // Optionally, display an error message to the user
-    } finally {
-        isLoading = false;
-        loadingIndicator.style.display = 'none';
-    }
-};
+        } catch (error) {
+            console.error("Failed to load more posts:", error);
+            // Optionally, display an error message to the user
+        } finally {
+            isLoading = false;
+            loadingIndicator.style.display = 'none';
+        }
+    };
+
+    window.addEventListener('scroll', () => {
+        // Load more posts when the user is 100px from the bottom
+        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100) {
+            loadMorePosts();
+        }
+    });
+}

@@ -8,7 +8,6 @@ blog_bp: Blueprint = Blueprint("blog", __name__)
 @blog_bp.route("/")
 def home():
     posts = post_service.get_recent_posts()
-    print("Rendering home with posts:", posts)
     return render_template("index.html", posts=posts, admin=session.get("admin", False))
 
 
