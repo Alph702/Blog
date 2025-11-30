@@ -211,6 +211,6 @@ class PostRepository:
         except Exception:
             logger.error("Error checking for next page.")
             raise RuntimeError("Error checking for next page.")
-    
+
     def __del__(self):
         logger.debug("Destroying PostRepository instance.")

@@ -2,7 +2,8 @@ from typing import Optional, Dict, Any
 from supabase import Client
 import logging
 
-logger = logging.getLogger('auth.repository')
+logger = logging.getLogger("auth.repository")
+
 
 class UserRepository:
     def __init__(self, client: Client):
@@ -22,7 +23,9 @@ class UserRepository:
 
             # supabase client can return error, mapping, sequence, or primitive
             if getattr(response, "error", None):
-                logger.error(f"Error fetching persistent login: {getattr(response, "error", "Unknown error")}")
+                logger.error(
+                    f"Error fetching persistent login: {getattr(response, 'error', 'Unknown error')}"
+                )
                 raise RuntimeError(
                     f"Error fetching persistent login: {getattr(response, 'error', 'Unknown error')}"
                 )

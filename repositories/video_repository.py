@@ -2,7 +2,8 @@ from typing import Dict, Any, Optional
 from supabase import Client
 import logging
 
-logger = logging.getLogger('video.repository')
+logger = logging.getLogger("video.repository")
+
 
 class VideoRepository:
     def __init__(self, client: Client):
@@ -34,11 +35,17 @@ class VideoRepository:
                 .execute()
             )
             if getattr(response, "error", None):
-                logger.error(f"Error fetching video by ID {video_id}: {getattr(response, 'error')}")
-                raise RuntimeError(f"Query failed: {getattr(response, 'error', 'Unknown error')}")
+                logger.error(
+                    f"Error fetching video by ID {video_id}: {getattr(response, 'error')}"
+                )
+                raise RuntimeError(
+                    f"Query failed: {getattr(response, 'error', 'Unknown error')}"
+                )
             return self._extract_record(getattr(response, "data", None))
         except Exception:
-            logger.exception(f"Exception occurred while fetching video by ID {video_id}")
+            logger.exception(
+                f"Exception occurred while fetching video by ID {video_id}"
+            )
             raise RuntimeError("Failed to fetch video by ID")
 
     def create(
@@ -66,15 +73,19 @@ class VideoRepository:
             data = {"status": status}
             if filepath:
                 data["filepath"] = filepath
-            response = self.client.table("videos").update(data).eq("id", video_id).execute()
+            response = (
+                self.client.table("videos").update(data).eq("id", video_id).execute()
+            )
             if getattr(response, "error", None):
-                logger.error(f"Error updating video ID {video_id}: {getattr(response, 'error')}")
+                logger.error(
+                    f"Error updating video ID {video_id}: {getattr(response, 'error')}"
+                )
                 raise RuntimeError(
                     f"Update failed: {getattr(response, 'error', 'Unknown error')}"
                 )
         except Exception as e:
             logger.exception(f"Exception occurred while updating video ID {video_id}")
             raise RuntimeError("Failed to update video record") from e
-    
+
     def __del__(self):
         logger.info("VideoRepository instance is being destroyed")
