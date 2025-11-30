@@ -64,3 +64,6 @@ class UserRepository:
         except Exception:
             logger.error("Error occurred while deleting persistent login")
             raise RuntimeError("Error deleting persistent login")
+
+    def __del__(self):
+        logger.debug("UserRepository instance is being destroyed")
