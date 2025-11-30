@@ -114,12 +114,12 @@ class PostService:
         import pytz
 
         # TODO: Get user timezone
-        local_tz = pytz.timezone("Asia/Karachi")
+        utc = pytz.timezone("UTC")
         return {
-            "Year": datetime.now(local_tz).strftime("%Y"),
-            "Month": datetime.now(local_tz).strftime("%m"),
-            "Day": datetime.now(local_tz).strftime("%d"),
-            "Time": datetime.now(local_tz).strftime("%H:%M:%S"),
+            "Year": datetime.now(utc).strftime("%Y"),
+            "Month": datetime.now(utc).strftime("%m"),
+            "Day": datetime.now(utc).strftime("%d"),
+            "Time": datetime.now(utc).strftime("%H:%M:%S"),
         }
 
     def _allowed_file(self, filename: str) -> bool:
