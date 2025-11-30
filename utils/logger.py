@@ -30,7 +30,7 @@ def setup_logging(app: Optional[Flask] = None, log_file: Optional[str] = "app.lo
     # 1. Console Handler: Outputs logs to stderr
     console_handler = logging.StreamHandler()
     console_formatter = logging.Formatter(
-        '[%(asctime)s] %(levelname)s in %(name)s: %(message)s'
+        '{%(asctime)s} - [%(levelname)s] in %(module)s - (%(name)s) -- [%(filename)s::%(funcName)s:%(lineno)d]: %(message)s'
     )
     console_handler.setFormatter(console_formatter)
     target_logger.addHandler(console_handler)
@@ -50,7 +50,7 @@ def setup_logging(app: Optional[Flask] = None, log_file: Optional[str] = "app.lo
             encoding='utf-8'
         )
         file_formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            '{%(asctime)s} - [%(levelname)s] in %(module)s - (%(name)s) -- [%(filename)s::%(funcName)s:%(lineno)d]: %(message)s'
         )
         file_handler.setFormatter(file_formatter)
         target_logger.addHandler(file_handler)

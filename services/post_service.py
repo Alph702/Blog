@@ -7,7 +7,7 @@ from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('post.service')
 
 class PostService:
     def __init__(self, repo: PostRepository, video_service: VideoService):

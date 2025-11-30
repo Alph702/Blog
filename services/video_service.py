@@ -4,7 +4,7 @@ from repositories import VideoRepository
 from services.worker_service import WorkerService
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('video.service')
 
 class VideoService:
     """Service for handling video-related operations."""
