@@ -14,20 +14,20 @@ from services import VideoService
 from services import WorkerService
 
 # Validate essential environment variables
-env_names: list[str] | None = []
-for env in [
-    Config.SUPABASE_URL,
-    Config.SUPABASE_KEY,
-    Config.SECRET_KEY,
-    Config.ADMIN_USERNAME,
-    Config.ADMIN_PASSWORD,
-    Config.BLOG_IMAGES_BUCKET,
-    Config.BLOG_VIDEOS_BUCKET,
-]:
-    if env == "UNDEFINED":
-        env_names.append(env)
-if env_names:
-    raise EnvironmentError(f"Missing environment variables: {', '.join(env_names)}")
+required_env_vars = {
+    "SUPABASE_URL": Config.SUPABASE_URL,
+    "SUPABASE_KEY": Config.SUPABASE_KEY,
+    "SECRET_KEY": Config.SECRET_KEY,
+    "ADMIN_USERNAME": Config.ADMIN_USERNAME,
+    "ADMIN_PASSWORD": Config.ADMIN_PASSWORD,
+    "BLOG_IMAGES_BUCKET": Config.BLOG_IMAGES_BUCKET,
+    "BLOG_VIDEOS_BUCKET": Config.BLOG_VIDEOS_BUCKET,
+}
+
+missing_env_vars: list[str] = [name for name, value in required_env_vars.items() if value == "UNDEFINED"]
+
+if missing_env_vars:
+    raise EnvironmentError(f"Missing environment variables: {', '.join(missing_env_vars)}")
 
 # Initialize Supabase Client
 supabase_client: Client = create_client(Config.SUPABASE_URL, Config.SUPABASE_KEY)

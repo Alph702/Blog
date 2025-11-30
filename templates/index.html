@@ -1,19 +1,19 @@
 {% extends "layout.html" %}
 
 {% block content %}
- 
+
 <div class="container Post-Container" id="posts-container">
     <h1 class="title" style="font-size: 400%;">My Blog</h1>
     {% if 'admin' in session %}
-    <a href="{{ url_for('new_post') }}">New Post</a>
-    <a href="{{ url_for('logout') }}" id="logoutButton" onclick="logoutUser()">Logout</a>
+    <a href="{{ url_for('admin.new_post') }}">New Post</a>
+    <a href="{{ url_for('auth.logout') }}" id="logoutButton" onclick="logoutUser()">Logout</a>
     {% else %}
-    <a href="{{ url_for('login') }}" id="loginButton">Login</a>
+    <a href="{{ url_for('auth.login') }}" id="loginButton">Login</a>
     {% endif %}
 
     <button id="toggleFilterBtn" onclick="toggleFilter()">Show Filter Options</button>
     <div id="filterPanel" class="filter-panel">
-        <form method="GET" action="{{ url_for('filter_posts') }}" class="filter-form">
+        <form method="GET" action="{{ url_for('blog.filter_posts') }}" class="filter-form">
             <div class="filter-group">
                 <label for="year">Year:</label>
                 <select id="year" name="year">
@@ -25,7 +25,7 @@
             </div>
             <div class="filter-group">
                 <label for="month">Month:</label>
-                <select id="month" name="month"> 
+                <select id="month" name="month">
                     <option value="any">Any</option>
                     {% for m in available_months %}
                     <option value="{{ m }}">{{ m }}</option>
@@ -42,34 +42,38 @@
                 </select>
             </div>
             <button type="submit">Apply Filter</button>
-            <a href="{{ url_for('home') }}" class="filter-reset-btn">Reset Filters</a>
+            <a href="{{ url_for('blog.home') }}" class="filter-reset-btn">Reset Filters</a>
         </form>
     </div>
 
     <hr>
 
     {% for post in posts %}
-    <a href="{{ url_for('view_post', post_id=post[0]) }}" class="post-button">
+    <a href="{{ url_for('blog.view_post', post_id=post.id) }}" class="post-button">
         <div class="post">
-            <h1 class="Heding">{{ post[1] }}</h1>
-            <p class="text">{{ post[2] }}</p>
-            {% if post[3] %}
+            {% if post.title %}
+            <h1 class="Heding">{{ post.title }}</h1>
+            {% endif %}
+            <p class="text">{{ post.content }}</p>
+            {% if post.image %}
             <div class="gallery">
-                <img src="{{ post[3] }}" alt="Post Image" class="image" loading="lazy">
+                <img src="{{ post.image }}" alt="Post Image" class="image" loading="lazy">
             </div>
             <br>
             {% endif %}
-            {% if post[5] %}
+            {% if post.video %}
             <a>
                 {% from "components/video_player.html" import video_player %}
-                {{ video_player(post[5]) }}
+                {{ video_player(post.video) }}
             </a>
-            {% endif %} 
-            <small>Posted on {{ post[4] }}</small>
+            {% endif %}
+            <small class="timestamp" data-ts="{{ post.timestamps }}">
+                Posted on ...
+            </small>
             <br>
             {% if 'admin' in session %}
-            <a style="padding-right: 5px;" href="{{ url_for('edit_post', post_id=post[0]) }}">Edit</a>
-            <a href="{{ url_for('delete_post', post_id=post[0]) }}">Delete</a>
+            <a style="padding-right: 5px;" href="{{ url_for('admin.edit_post', post_id=post.id) }}">Edit</a>
+            <a href="{{ url_for('admin.delete_post', post_id=post.id) }}">Delete</a>
             {% endif %}
         </div>
     </a>

@@ -1,6 +1,6 @@
 from typing import List, Dict, Any, Optional, cast
 from repositories import PostRepository
-from services import VideoService
+from .video_service import VideoService 
 from dateutil import parser
 from config import Config
 from werkzeug.datastructures import FileStorage
@@ -22,11 +22,11 @@ class PostService:
         )
 
         for post in posts:
-            post["formatted_timestamp"] = self._format_date(
-                cast(int, post.get("year")),
-                cast(int, post.get("month")),
-                cast(int, post.get("day")),
-                cast(str, post.get("time")),
+            post["timestamps"] = self._format_date(
+                cast(int, post.get("created_year")),
+                cast(int, post.get("created_month")),
+                cast(int, post.get("created_day")),
+                cast(str, post.get("created_time")),
             )
             if post.get("video_id"):
                 post["video"] = self.video_service.get_video_by_id(post["video_id"])
