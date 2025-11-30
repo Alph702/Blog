@@ -2,7 +2,9 @@ from typing import Any, Dict, Optional
 from werkzeug.datastructures import FileStorage
 from repositories import VideoRepository
 from services.worker_service import WorkerService
+import logging
 
+logger = logging.getLogger(__name__)
 
 class VideoService:
     """Service for handling video-related operations."""
@@ -13,12 +15,18 @@ class VideoService:
 
     def upload_video(self, file: FileStorage) -> Optional[int]:
         """Uploads a video file and queues it for processing."""
-        file_id: Optional[int] = self.worker.queue_file(file)
-
-        return file_id
+        try:
+            file_id: Optional[int] = self.worker.queue_file(file)
+            return file_id
+        except Exception as e:
+            logger.error(f"Failed to queue video file: {e}")
+            raise Exception("Video upload failed")
 
     def get_video_by_id(self, video_id: int) -> Optional[dict]:
         """Fetches video metadata by its ID."""
-        video_record: Optional[Dict[str, Any]] = self.repo.get_by_id(video_id)
-
-        return video_record
+        try:
+            video_record: Optional[Dict[str, Any]] = self.repo.get_by_id(video_id)
+            return video_record
+        except Exception as e:
+            logger.error(f"Failed to fetch video with ID {video_id}: {e}")
+            raise Exception("Video retrieval failed")
