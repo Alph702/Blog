@@ -49,12 +49,10 @@
     <hr>
 
     {% for post in posts %}
+    <div class="post">
     <a href="{{ url_for('blog.view_post', post_id=post.id) }}" class="post-button">
-        <div class="post">
-            {% if post.title %}
             <h1 class="Heding">{{ post.title }}</h1>
-            {% endif %}
-            <p class="text">{{ post.content }}</p>
+            <p class="text">{{ post.content | safe }}</p>
             {% if post.image %}
             <div class="gallery">
                 <img src="{{ post.image }}" alt="Post Image" class="image" loading="lazy">
@@ -75,8 +73,8 @@
             <a style="padding-right: 5px;" href="{{ url_for('admin.edit_post', post_id=post.id) }}">Edit</a>
             <a href="{{ url_for('admin.delete_post', post_id=post.id) }}">Delete</a>
             {% endif %}
-        </div>
-    </a>
+        </a>
+    </div>
     {% endfor %}
 </div>
 
