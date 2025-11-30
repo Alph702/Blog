@@ -1,9 +1,12 @@
 from typing import Optional, Dict, Any
 from supabase import Client
+import logging
 
+logger = logging.getLogger('auth.repository')
 
 class UserRepository:
     def __init__(self, client: Client):
+        logger.debug("Initializing UserRepository with Supabase client")
         self.client = client
 
     def get_persistent_login(self, token: str) -> Optional[Dict[str, Any]]:
@@ -19,6 +22,7 @@ class UserRepository:
 
             # supabase client can return error, mapping, sequence, or primitive
             if getattr(response, "error", None):
+                logger.error(f"Error fetching persistent login: {getattr(response, "error", "Unknown error")}")
                 raise RuntimeError(
                     f"Error fetching persistent login: {getattr(response, 'error', 'Unknown error')}"
                 )
@@ -38,6 +42,7 @@ class UserRepository:
 
             return None
         except Exception:
+            logger.exception("Exception occurred while fetching persistent login")
             raise RuntimeError("Error fetching persistent login")
 
     def create_persistent_login(
@@ -49,6 +54,7 @@ class UserRepository:
                 {"user_id": user_id, "token": token, "expires_at": expires_at}
             ).execute()
         except Exception:
+            logger.error("Error occurred while creating persistent login")
             raise RuntimeError("Error creating persistent login")
 
     def delete_persistent_login(self, token: str) -> None:
@@ -56,4 +62,5 @@ class UserRepository:
         try:
             self.client.table("persistent_logins").delete().eq("token", token).execute()
         except Exception:
+            logger.error("Error occurred while deleting persistent login")
             raise RuntimeError("Error deleting persistent login")
