@@ -552,18 +552,18 @@ sequenceDiagram
 
 ## ✅ Checklist for Logging Implementation
 
-- [] **Create `utils` Directory**: If it doesn't exist, create `Blog/utils/`.
-- [] **Create `utils/logger.py`**: Implement the `setup_logging` function as provided.
-- [] **Update `config.py`**: Add `LOG_LEVEL` and `LOG_FILE` properties, ensuring environment variable support.
+- [x] **Create `utils` Directory**: If it doesn't exist, create `Blog/utils/`.
+- [x] **Create `utils/logger.py`**: Implement the `setup_logging` function as provided.
+- [x] **Update `config.py`**: Add `LOG_LEVEL` and `LOG_FILE` properties, ensuring environment variable support.
 - [] **Update `app.py`**:
-    - [] Import `setup_logging` from `utils.logger`.
-    - [] Call `setup_logging(app=app, log_file=Config.LOG_FILE, level=Config.LOGGING_LEVEL)` early in the app initialization.
+    - [x] Import `setup_logging` from `utils.logger`.
+    - [x] Call `setup_logging(app=app, log_file=Config.LOG_FILE, level=Config.LOGGING_LEVEL)` early in the app initialization.
     - [] Add an example `app.logger.info()` and `app.logger.debug()` call.
     - [] Implement a general `app.errorhandler(Exception)` to catch and log unhandled exceptions with `exc_info=True`.
-- [ ] **Integrate Logging in `blueprints/*.py`**:
-    - [ ] Import `logging` at the top of each blueprint file.
-    - [ ] Add `logger = logging.getLogger(__name__)` at the module level.
-    - [ ] Replace `print()` statements and add appropriate `logger.info()`, `logger.debug()`, `logger.warning()`, and `logger.error(..., exc_info=True)` calls.
+- [x] **Integrate Logging in `blueprints/*.py`**:
+    - [x] Import `logging` at the top of each blueprint file.
+    - [x] Add `logger = logging.getLogger(__name__)` at the module level.
+    - [x] Replace `print()` statements and add appropriate `logger.info()`, `logger.debug()`, `logger.warning()`, and `logger.error(..., exc_info=True)` calls.
 - [ ] **Integrate Logging in `services/*.py`**:
     - [ ] Import `logging` at the top of each service file.
     - [ ] Add `logger = logging.getLogger(__name__)` at the module level.
