@@ -15,11 +15,18 @@ class PostRepository:
     def _extract_records(self, data: Any) -> List[Dict[str, Any]]:
         """Normalize response.data into a list of dict records."""
         try:
-            logger.debug(f"Extracting records from data: {data}")
+            logger.debug(
+                f"_extract_records() called with data type: {type(data).__name__}"
+            )
             if isinstance(data, dict):
+                logger.debug("Data is dict, wrapping in list")
+            if isinstance(data, dict):
+                logger.debug("Data is dict, wrapping in list")
                 return [data]
             if isinstance(data, (list, tuple)):
+                logger.debug(f"Data is sequence with {len(data)} items")
                 return [item for item in data if isinstance(item, dict)]
+            logger.debug("Data is empty or unrecognized type")
             return []
         except Exception as e:
             logger.error(f"Error extracting records: {e}", exc_info=True)
@@ -29,7 +36,11 @@ class PostRepository:
         self, limit: int = 10, offset: int = 0, order_by: str = "id"
     ) -> List[Dict[str, Any]]:
         """Fetch all posts with pagination and ordering."""
+        logger.debug(
+            f"get_all() called - limit: {limit}, offset: {offset}, order_by: {order_by}"
+        )
         try:
+            logger.debug("Querying posts table")
             response = (
                 self.client.table("posts")
                 .select("*")
@@ -38,9 +49,14 @@ class PostRepository:
                 .offset(offset)
                 .execute()
             )
+            logger.debug(
+                f"Query executed, response error: {getattr(response, 'error', None)}"
+            )
             if getattr(response, "error", None):
+                logger.debug("Error in response, returning empty list")
                 return []
             data = getattr(response, "data", None)
+            logger.debug(f"Extracting {len(getattr(response, 'data', []))} records")
             return self._extract_records(data)
         except Exception as e:
             logger.error(f"Error fetching posts: {e}", exc_info=True)
@@ -48,7 +64,9 @@ class PostRepository:
 
     def get_by_id(self, post_id: int) -> Optional[Dict[str, Any]]:
         """Fetch a post by its ID."""
+        logger.debug(f"get_by_id() called with post_id: {post_id}")
         try:
+            logger.debug("Querying posts table for single record")
             response = (
                 self.client.table("posts")
                 .select("*")
@@ -56,9 +74,14 @@ class PostRepository:
                 .single()
                 .execute()
             )
+            logger.debug(
+                f"Query executed, response error: {getattr(response, 'error', None)}"
+            )
             if getattr(response, "error", None):
+                logger.debug("Error in response, returning None")
                 return None
             data = getattr(response, "data", None)
+            logger.debug("Extracting record from response")
             records = self._extract_records(data)
             return records[0] if records else None
         except Exception as e:
@@ -67,8 +90,13 @@ class PostRepository:
 
     def create(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Create a new post."""
+        logger.debug(f"create() called with title: {data.get('title')}")
         try:
+            logger.debug("Inserting new post record")
             response = self.client.table("posts").insert(data).execute()
+            logger.debug(
+                f"Insert executed, response error: {getattr(response, 'error', None)}"
+            )
             if getattr(response, "error", None):
                 logger.error(
                     f"Error creating post: {getattr(response, 'error', 'Unknown error')}",
@@ -77,6 +105,7 @@ class PostRepository:
                 raise RuntimeError(
                     f"Error creating post: {getattr(response, 'error', 'Unknown error')}"
                 )
+            logger.debug("Extracting created record from response")
             records = self._extract_records(getattr(response, "data", None))
             return records[0] if records else None
         except Exception as e:
@@ -85,9 +114,16 @@ class PostRepository:
 
     def update(self, post_id: int, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Update an existing post."""
+        logger.debug(
+            f"update() called with post_id: {post_id}, data keys: {list(data.keys())}"
+        )
         try:
+            logger.debug("Updating post record")
             response = (
                 self.client.table("posts").update(data).eq("id", post_id).execute()
+            )
+            logger.debug(
+                f"Update executed, response error: {getattr(response, 'error', None)}"
             )
             if getattr(response, "error", None):
                 logger.error(
@@ -97,6 +133,7 @@ class PostRepository:
                 raise RuntimeError(
                     f"Error updating post: {getattr(response, 'error', 'Unknown error')}"
                 )
+            logger.debug("Extracting updated record from response")
             records = self._extract_records(getattr(response, "data", None))
             return records[0] if records else None
         except Exception as e:
@@ -105,8 +142,11 @@ class PostRepository:
 
     def delete(self, post_id: int):
         """Delete a post by its ID."""
+        logger.debug(f"delete() called with post_id: {post_id}")
         try:
+            logger.debug("Deleting post record")
             self.client.table("posts").delete().eq("id", post_id).execute()
+            logger.debug(f"Post {post_id} deleted successfully")
         except Exception as e:
             logger.error(f"Error deleting post: {e}", exc_info=True)
             raise RuntimeError(f"Error deleting post: {e}")
@@ -120,8 +160,12 @@ class PostRepository:
         offset: int = 0,
         order_by: str = "id",
     ) -> List[Dict[str, Any]]:
+        logger.debug(
+            f"filter_by_date() called - year: {year}, month: {month}, day: {day}"
+        )
         posts: List[Dict[str, Any]] = []
         try:
+            logger.debug("Building query with date filters")
             query = (
                 self.client.table("posts")
                 .select("*")
@@ -131,13 +175,20 @@ class PostRepository:
             )
 
             if year != "any":
+                logger.debug(f"Adding year filter: {year}")
                 query = query.eq("year", year)
             if month != "any":
+                logger.debug(f"Adding month filter: {month}")
                 query = query.eq("month", month)
             if day != "any":
+                logger.debug(f"Adding day filter: {day}")
                 query = query.eq("day", day)
 
+            logger.debug("Executing filtered query")
             response = query.execute()
+            logger.debug(
+                f"Query executed, response error: {getattr(response, 'error', None)}"
+            )
             if getattr(response, "error", None):
                 logger.error(
                     f"Error filtering posts: {getattr(response, 'error', 'Unknown error')}",
@@ -146,6 +197,7 @@ class PostRepository:
                 return []
 
             data = getattr(response, "data", None)
+            logger.debug("Extracting filtered records")
             posts = self._extract_records(data)
             return posts
         except Exception as e:
@@ -154,9 +206,12 @@ class PostRepository:
 
     def upload_file(self, file: FileStorage, file_name: str) -> Optional[str]:
         """Upload a file to Supabase storage and return its public URL."""
+        logger.debug(f"upload_file() called with file_name: {file_name}")
         try:
             try:
+                logger.debug("Reading file into memory")
                 file_bytes = file.read()
+                logger.debug(f"File read: {len(file_bytes)} bytes")
             except Exception as e:
                 file_bytes = None
                 logger.error(
@@ -168,9 +223,13 @@ class PostRepository:
                 image_url: Optional[str] = None
                 try:
                     try:
+                        logger.debug(
+                            f"Uploading file to bucket: {Config.BLOG_IMAGES_BUCKET}"
+                        )
                         self.client.storage.from_(Config.BLOG_IMAGES_BUCKET).upload(
                             file_name, file_bytes, {"content-type": file.content_type}
                         )
+                        logger.debug("File uploaded successfully")
                         image_url = f"{Config.SUPABASE_URL}/storage/v1/object/public/{Config.BLOG_IMAGES_BUCKET}/{file_name}"
                     except Exception as e:
                         logger.warning(
@@ -201,8 +260,10 @@ class PostRepository:
 
     def has_next_page(self, page: int) -> bool:
         """Check if there is a next page of posts."""
+        logger.debug(f"has_next_page() called with page: {page}")
         try:
             offset = page * Config.POSTS_PER_PAGE
+            logger.debug(f"Checking for posts at offset: {offset}")
             response = (
                 self.client.table("posts")
                 .select("id")
@@ -210,11 +271,15 @@ class PostRepository:
                 .limit(1)
                 .execute()
             )
+            logger.debug(
+                f"Query executed, response error: {getattr(response, 'error', None)}"
+            )
             if getattr(response, "error", None):
                 return False
             data = getattr(response, "data", None)
             records = self._extract_records(data)
             count = len(records)
+            logger.debug(f"Found {count} record(s), has_next: {count > 0}")
             return True if count > 0 else False
         except Exception:
             logger.error("Error checking for next page.", exc_info=True)

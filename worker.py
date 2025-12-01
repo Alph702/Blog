@@ -6,6 +6,10 @@ import requests
 import supabase
 from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.schedulers.background import BackgroundScheduler
+import logging
+
+# Module logger for worker
+logger = logging.getLogger(__name__)
 
 
 class Worker:
@@ -26,6 +30,7 @@ class Worker:
             self.SUPABASE_URL, self.SUPABASE_KEY
         )
         self.videos_bucket = videos_bucket
+        logger.info("Worker initialized and scheduler started")
 
     def save_file(self, file):
         filename = uuid.uuid4().hex + "." + file.filename.split(".")[-1]
@@ -81,7 +86,9 @@ class Worker:
                         upload_path, data, {"cacheControl": "3600"}
                     )
                 except Exception as e:
-                    print(f"Error uploading {file_path} to Supabase: {e}")
+                    logger.error(
+                        f"Error uploading {file_path} to Supabase: {e}", exc_info=True
+                    )
 
     def _process_file(self, file_id):
         result = (

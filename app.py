@@ -2,6 +2,7 @@ from flask import Flask
 from config import Config
 import blueprints
 from utils.logger import setup_logging
+import logging
 
 app: Flask = Flask(__name__)
 app.config.from_object(Config)
@@ -9,7 +10,9 @@ app.secret_key = Config.SECRET_KEY
 
 main_logger = setup_logging(app, log_file=Config.LOG_FILE, level=Config().LOGGING_LEVEL)
 
-main_logger.debug("Flask application initialized")
+# Module-level logger for app module
+logger = logging.getLogger(__name__)
+logger.info("Flask application initialized")
 
 # Register Blueprints
 app.register_blueprint(blueprints.auth_bp)

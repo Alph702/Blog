@@ -19,10 +19,12 @@ class PostService:
         logger.info("PostService initialized!")
 
     def get_recent_posts(self, page: int = 1) -> List[Dict[str, Any]]:
-        logger.debug(f"Fetching recent posts for page {page}")
+        logger.debug(f"get_recent_posts() called with page: {page}")
         offset: int = (page - 1) * self.limit
+        logger.debug(f"Calculated offset: {offset}, limit: {self.limit}")
         try:
             try:
+                logger.debug("Calling repo.get_all() with pagination")
                 posts: List[Dict[str, Any]] = self.repo.get_all(
                     limit=self.limit, offset=offset, order_by="timestamp" or "id"
                 )
@@ -34,6 +36,7 @@ class PostService:
 
             logger.debug(f"Retrieved {len(posts)} posts from repository")
             try:
+                logger.debug("Processing posts and formatting timestamps")
                 for post in posts:
                     post["timestamps"] = self._format_date(
                         cast(int, post.get("created_year")),
@@ -58,13 +61,15 @@ class PostService:
     def get_post_by_id(self, post_id: int) -> Optional[Dict[str, Any]]:
         try:
             try:
-                logger.debug(f"Fetching post by ID: {post_id}")
+                logger.debug(f"get_post_by_id() called with post_id: {post_id}")
+                logger.debug("Calling repo.get_by_id()")
                 post = self.repo.get_by_id(post_id)
             except Exception as e:
                 logger.error(f"Error fetching post from repository: {e}", exc_info=True)
                 raise Exception("Failed to retrieve post.")
             logger.debug(f"Retrieved post: {post}")
             try:
+                logger.debug("Processing post data and formatting timestamps")
                 if post:
                     post["timestamps"] = self._format_date(
                         cast(int, post.get("created_year")),
@@ -97,8 +102,10 @@ class PostService:
         image_url: Optional[str] = None,
         video_id: Optional[int] = None,
     ):
+        logger.debug(f"create_post() called with title: {title}")
         try:
             try:
+                logger.debug("Preparing post data")
                 timestamp: Dict[str, str] = self._get_current_timestamp()
                 data = {
                     "title": title,
@@ -117,6 +124,7 @@ class PostService:
                 raise ValueError("Invalid data for creating post.")
             logger.debug(f"Creating post with data: {data}")
             try:
+                logger.debug("Calling repo.create()")
                 res = self.repo.create(data)
             except Exception as e:
                 if getattr(e, "code", None) == "23505":  # Unique violation
@@ -145,9 +153,10 @@ class PostService:
     ) -> Optional[Dict[str, Any]]:
         try:
             logger.debug(
-                f"Updating post ID {post_id} with title: {title}, content length: {len(content)}"
+                f"update_post() called with post_id: {post_id}, title: {title}"
             )
             try:
+                logger.debug(f"Fetching current post data for post_id: {post_id}")
                 post_data = self.get_post_by_id(post_id)
                 if not post_data:
                     logger.warning(f"Post with ID {post_id} not found for update")
@@ -163,6 +172,7 @@ class PostService:
             logger.debug(f"Initial update data: {update_data}")
 
             try:
+                logger.debug("Checking for image file in update")
                 if image_file:
                     image_url = self.upload_image(image_file)
                     if image_url:
@@ -172,6 +182,7 @@ class PostService:
                 raise
 
             try:
+                logger.debug("Checking for video file in update")
                 if video_file:
                     video_id = self.video_service.upload_video(video_file)
                     if video_id:
@@ -181,6 +192,7 @@ class PostService:
                 raise
             logger.debug(f"Final update data: {update_data}")
             try:
+                logger.debug(f"Calling repo.update() for post_id: {post_id}")
                 res = self.repo.update(post_id, update_data)
             except Exception as e:
                 logger.error(f"Error updating post in repository: {e}", exc_info=True)
@@ -199,8 +211,9 @@ class PostService:
         try:
             try:
                 logger.debug(
-                    f"Filtering posts by date - Year: {year}, Month: {month}, Day: {day}, Page: {page}"
+                    f"filter_posts() called - Year: {year}, Month: {month}, Day: {day}, Page: {page}"
                 )
+                logger.debug("Calling repo.filter_by_date()")
                 posts: List[Dict[str, Any]] = self.repo.filter_by_date(
                     year,
                     month,
@@ -234,7 +247,8 @@ class PostService:
 
     def delete_post(self, post_id: int):
         try:
-            logger.debug(f"Deleting post with ID: {post_id}")
+            logger.debug(f"delete_post() called with post_id: {post_id}")
+            logger.debug("Calling repo.delete()")
             self.repo.delete(post_id)
         except Exception as e:
             logger.error(f"Error deleting post ID {post_id}: {e}", exc_info=True)
@@ -242,8 +256,9 @@ class PostService:
 
     def upload_image(self, file: FileStorage) -> Optional[str]:
         try:
-            logger.debug(f"Uploading image with filename: {file.filename}")
+            logger.debug(f"upload_image() called with filename: {file.filename}")
             if file and self._allowed_file(str(file.filename)):
+                logger.debug(f"File is allowed, uploading: {file.filename}")
                 filename = secure_filename(str(file.filename))
                 try:
                     image_url: Optional[str] = self.repo.upload_file(file, filename)
@@ -261,7 +276,8 @@ class PostService:
 
     def has_next_page(self, page: int) -> bool:
         try:
-            logger.debug(f"Checking for next page after page {page}")
+            logger.debug(f"has_next_page() called with page: {page}")
+            logger.debug("Calling repo.has_next_page()")
             return self.repo.has_next_page(page)
         except Exception as e:
             logger.error(f"Error checking for next page: {e}", exc_info=True)

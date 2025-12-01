@@ -12,13 +12,19 @@ class VideoRepository:
 
     def _extract_record(self, data: Any) -> Optional[Dict[str, Any]]:
         """Return the first record as a dict if possible, otherwise None."""
+        logger.debug(f"_extract_record() called with data type: {type(data).__name__}")
         try:
             if isinstance(data, dict):
+                logger.debug("Data is dict, returning as record")
                 return data
             if isinstance(data, (list, tuple)) and data:
+                logger.debug(
+                    f"Data is sequence with {len(data)} items, extracting first"
+                )
                 first = data[0]
                 if isinstance(first, dict):
                     return first
+            logger.debug("Data is empty or unrecognized")
             return None
         except Exception:
             logger.exception("Error extracting record")
@@ -26,13 +32,18 @@ class VideoRepository:
 
     def get_by_id(self, video_id: int) -> Optional[Dict[str, Any]]:
         """Fetch a video record by its ID."""
+        logger.debug(f"get_by_id() called with video_id: {video_id}")
         try:
+            logger.debug("Querying videos table for single record")
             response = (
                 self.client.table("videos")
                 .select("*")
                 .eq("id", video_id)
                 .single()
                 .execute()
+            )
+            logger.debug(
+                f"Query executed, response error: {getattr(response, 'error', None)}"
             )
             if getattr(response, "error", None):
                 logger.error(
@@ -42,6 +53,7 @@ class VideoRepository:
                 raise RuntimeError(
                     f"Query failed: {getattr(response, 'error', 'Unknown error')}"
                 )
+            logger.debug("Extracting record from response")
             return self._extract_record(getattr(response, "data", None))
         except Exception:
             logger.exception(
@@ -53,15 +65,25 @@ class VideoRepository:
         self, filename: str, filepath: str, status: str = "processing"
     ) -> Dict[str, Any]:
         """Create a new video record."""
+        logger.debug(f"create() called with filename: {filename}, status: {status}")
         try:
+            logger.debug("Preparing payload and inserting record")
             payload = {"filename": filename, "filepath": filepath, "status": status}
             response = self.client.table("videos").insert(payload).execute()
+            logger.debug(
+                f"Insert executed, response error: {getattr(response, 'error', None)}"
+            )
             if getattr(response, "error", None):
+                logger.error(
+                    f"Insert failed with error: {getattr(response, 'error', 'Unknown error')}"
+                )
                 raise RuntimeError(
                     f"Insert failed: {getattr(response, 'error', 'Unknown error')}"
                 )
+            logger.debug("Extracting inserted record from response")
             record = self._extract_record(getattr(response, "data", None))
             if record is None:
+                logger.error("Unexpected insert response shape - no record returned")
                 raise RuntimeError("Unexpected insert response shape")
             return record
         except Exception as e:
@@ -70,12 +92,20 @@ class VideoRepository:
 
     def update_status(self, video_id: int, status: str, filepath: str = ""):
         """Update the status (and optionally filepath) of a video record."""
+        logger.debug(
+            f"update_status() called for video_id: {video_id}, status: {status}"
+        )
         try:
             data = {"status": status}
             if filepath:
+                logger.debug("Updating filepath as well")
                 data["filepath"] = filepath
+            logger.debug(f"Updating video record with data: {data}")
             response = (
                 self.client.table("videos").update(data).eq("id", video_id).execute()
+            )
+            logger.debug(
+                f"Update executed, response error: {getattr(response, 'error', None)}"
             )
             if getattr(response, "error", None):
                 logger.error(

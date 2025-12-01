@@ -1,5 +1,6 @@
 from supabase import create_client, Client
 from config import Config
+import logging
 
 
 # Repositories
@@ -35,6 +36,10 @@ if missing_env_vars:
 
 # Initialize Supabase Client
 supabase_client: Client = create_client(Config.SUPABASE_URL, Config.SUPABASE_KEY)
+
+# Module logger for container
+logger = logging.getLogger(__name__)
+logger.info("Container initialized: Supabase client and components created")
 
 # Initialize Repositories
 post_repo: PostRepository = PostRepository(supabase_client)

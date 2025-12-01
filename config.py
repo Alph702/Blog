@@ -2,11 +2,17 @@ import os
 from dotenv import load_dotenv
 import logging
 
+# Module logger
+logger = logging.getLogger(__name__)
+
 
 class Config:
     """Configuration class to manage environment variables."""
 
+    logger.debug("Loading environment variables from .env file")
     load_dotenv()
+
+    logger.debug("Initializing configuration")
     SECRET_KEY: str = os.getenv("SECRET_KEY") or os.urandom(24).hex()
     SUPABASE_URL: str = os.getenv("SUPABASE_URL", "UNDEFINED")
     SUPABASE_KEY: str = os.getenv("SUPABASE_KEY") or os.getenv(
