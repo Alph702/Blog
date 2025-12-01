@@ -27,6 +27,10 @@ def setup_logging(
     else:
         target_logger = logging.getLogger()
 
+    if getattr(target_logger, "_setup_logging_done", False):
+        return target_logger
+    setattr(target_logger, "_setup_logging_done", True)
+
     target_logger.setLevel(level)
 
     for handler in list(target_logger.handlers):

@@ -9,11 +9,21 @@ app.secret_key = Config.SECRET_KEY
 
 main_logger = setup_logging(app, log_file=Config.LOG_FILE, level=Config().LOGGING_LEVEL)
 
+main_logger.debug("Flask application initialized")
+
 # Register Blueprints
 app.register_blueprint(blueprints.auth_bp)
 app.register_blueprint(blueprints.blog_bp)
 app.register_blueprint(blueprints.admin_bp)
 app.register_blueprint(blueprints.api_bp)
+
+
+# Log unhandled exceptions with traceback
+@app.errorhandler(Exception)
+def handle_exception(e):
+    main_logger.error(f"An unhandled exception occurred: {e}", exc_info=True)
+    return "Internal Server Error", 500
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080, debug=True)

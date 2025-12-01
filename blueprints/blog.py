@@ -1,5 +1,14 @@
 from typing import Any, Dict
-from flask import Blueprint, flash, render_template, request, session, send_from_directory, redirect, url_for
+from flask import (
+    Blueprint,
+    flash,
+    render_template,
+    request,
+    session,
+    send_from_directory,
+    redirect,
+    url_for,
+)
 from container import post_service
 import logging
 
@@ -9,6 +18,7 @@ logger = logging.getLogger("blog.blueprint")
 blog_bp: Blueprint = Blueprint("blog", __name__)
 
 logging.debug("Blog blueprint initialized")
+
 
 @blog_bp.route("/")
 def home():
@@ -31,7 +41,9 @@ def filter_posts():
     try:
         posts: list[Dict[str, Any]] = post_service.filter_posts(year, month, day)
     except Exception as e:
-        logger.error(f"Error filtering posts by date {year}-{month}-{day}: {e}")
+        logger.error(
+            f"Error filtering posts by date {year}-{month}-{day}: {e}", exc_info=True
+        )
         posts = []
         flash("Failed to filter posts", "error")
     return render_template("index.html", posts=posts)
@@ -43,14 +55,18 @@ def view_post(post_id: int):
     try:
         post = post_service.get_post_by_id(post_id)
     except Exception as e:
-        logger.error(f"Error fetching post {post_id}: {e}")
+        logger.error(f"Error fetching post {post_id}: {e}", exc_info=True)
         post = None
         flash("Failed to load post", "error")
         return redirect(url_for("blog.home"))
     return render_template("post.html", post=post)
 
 
-@blog_bp.route("/<path:path>")
+@blog_bp.route("/static/<path:path>")
 def serve_static(path: str):
-    logger.debug(f"Serving static file {path}")
-    return send_from_directory(directory="static", path=path)
+    try:
+        logger.debug(f"Serving static file {path}")
+        return send_from_directory(directory="static", path=path)
+    except Exception as e:
+        logger.error(f"Error serving static file {path}: {e}", exc_info=True)
+        return "File not found", 404

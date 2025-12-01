@@ -21,7 +21,7 @@ class VideoService:
             file_id: Optional[int] = self.worker.queue_file(file)
             return file_id
         except Exception as e:
-            logger.error(f"Failed to queue video file: {e}")
+            logger.error(f"Failed to queue video file: {e}", exc_info=True)
             raise Exception("Video upload failed")
 
     def get_video_by_id(self, video_id: int) -> Optional[dict]:
@@ -30,7 +30,9 @@ class VideoService:
             video_record: Optional[Dict[str, Any]] = self.repo.get_by_id(video_id)
             return video_record
         except Exception as e:
-            logger.error(f"Failed to fetch video with ID {video_id}: {e}")
+            logger.error(
+                f"Failed to fetch video with ID {video_id}: {e}", exc_info=True
+            )
             raise Exception("Video retrieval failed")
 
     def __del__(self):

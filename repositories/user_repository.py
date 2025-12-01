@@ -24,7 +24,8 @@ class UserRepository:
             # supabase client can return error, mapping, sequence, or primitive
             if getattr(response, "error", None):
                 logger.error(
-                    f"Error fetching persistent login: {getattr(response, 'error', 'Unknown error')}"
+                    f"Error fetching persistent login: {getattr(response, 'error', 'Unknown error')}",
+                    exc_info=True,
                 )
                 raise RuntimeError(
                     f"Error fetching persistent login: {getattr(response, 'error', 'Unknown error')}"
@@ -57,7 +58,9 @@ class UserRepository:
                 {"user_id": user_id, "token": token, "expires_at": expires_at}
             ).execute()
         except Exception:
-            logger.error("Error occurred while creating persistent login")
+            logger.error(
+                "Error occurred while creating persistent login", exc_info=True
+            )
             raise RuntimeError("Error creating persistent login")
 
     def delete_persistent_login(self, token: str) -> None:
@@ -65,7 +68,9 @@ class UserRepository:
         try:
             self.client.table("persistent_logins").delete().eq("token", token).execute()
         except Exception:
-            logger.error("Error occurred while deleting persistent login")
+            logger.error(
+                "Error occurred while deleting persistent login", exc_info=True
+            )
             raise RuntimeError("Error deleting persistent login")
 
     def __del__(self):

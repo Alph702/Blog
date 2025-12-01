@@ -27,7 +27,9 @@ class PostService:
                     limit=self.limit, offset=offset, order_by="timestamp" or "id"
                 )
             except Exception as e:
-                logger.error(f"Error fetching posts from repository: {e}")
+                logger.error(
+                    f"Error fetching posts from repository: {e}", exc_info=True
+                )
                 raise Exception("Failed to retrieve posts.")
 
             logger.debug(f"Retrieved {len(posts)} posts from repository")
@@ -46,11 +48,11 @@ class PostService:
 
                     logger.debug(f"Post: {post}")
             except Exception as e:
-                logger.error(f"Error processing posts: {e}")
+                logger.error(f"Error processing posts: {e}", exc_info=True)
                 raise Exception("Failed to process posts.")
             return posts
         except Exception as e:
-            logger.error(f"Error retrieving recent posts: {e}")
+            logger.error(f"Error retrieving recent posts: {e}", exc_info=True)
             raise Exception("Failed to retrieve recent posts.")
 
     def get_post_by_id(self, post_id: int) -> Optional[Dict[str, Any]]:
@@ -59,7 +61,7 @@ class PostService:
                 logger.debug(f"Fetching post by ID: {post_id}")
                 post = self.repo.get_by_id(post_id)
             except Exception as e:
-                logger.error(f"Error fetching post from repository: {e}")
+                logger.error(f"Error fetching post from repository: {e}", exc_info=True)
                 raise Exception("Failed to retrieve post.")
             logger.debug(f"Retrieved post: {post}")
             try:
@@ -82,10 +84,10 @@ class PostService:
                 logger.warning(f"ValueError: {ve}")
                 raise
             except Exception as e:
-                logger.error(f"Error processing post data: {e}")
+                logger.error(f"Error processing post data: {e}", exc_info=True)
                 raise
         except Exception as e:
-            logger.error(f"Error retrieving post by ID {post_id}: {e}")
+            logger.error(f"Error retrieving post by ID {post_id}: {e}", exc_info=True)
             raise Exception("Failed to retrieve post By Id.")
 
     def create_post(
@@ -109,7 +111,9 @@ class PostService:
                     "created_time": timestamp["Time"],
                 }
             except Exception as e:
-                logger.error(f"Error preparing post data for creation: {e}")
+                logger.error(
+                    f"Error preparing post data for creation: {e}", exc_info=True
+                )
                 raise ValueError("Invalid data for creating post.")
             logger.debug(f"Creating post with data: {data}")
             try:
@@ -119,13 +123,15 @@ class PostService:
                     logger.warning("Post with the same id already exists.")
                     raise ValueError("Post with the same id already exists.")
                 else:
-                    logger.error(f"Error creating post in repository: {e}")
+                    logger.error(
+                        f"Error creating post in repository: {e}", exc_info=True
+                    )
                     raise Exception("Failed to create post.")
         except ValueError as ve:
             logger.warning(f"ValueError: {ve}")
             raise Exception("Failed to create post.")
         except Exception as e:
-            logger.error(f"Error creating post: {e}")
+            logger.error(f"Error creating post: {e}", exc_info=True)
             raise Exception("Failed to create post.")
         return res
 
@@ -150,7 +156,7 @@ class PostService:
                 logger.warning(f"ValueError: {ve}")
                 raise
             except Exception as e:
-                logger.error(f"Error fetching post for update: {e}")
+                logger.error(f"Error fetching post for update: {e}", exc_info=True)
                 raise
 
             update_data = {"title": title, "content": content}
@@ -162,7 +168,7 @@ class PostService:
                     if image_url:
                         update_data["image"] = image_url
             except Exception as e:
-                logger.error(f"Error uploading image: {e}")
+                logger.error(f"Error uploading image: {e}", exc_info=True)
                 raise
 
             try:
@@ -171,19 +177,19 @@ class PostService:
                     if video_id:
                         update_data["video_id"] = video_id
             except Exception as e:
-                logger.error(f"Error uploading video: {e}")
+                logger.error(f"Error uploading video: {e}", exc_info=True)
                 raise
             logger.debug(f"Final update data: {update_data}")
             try:
                 res = self.repo.update(post_id, update_data)
             except Exception as e:
-                logger.error(f"Error updating post in repository: {e}")
+                logger.error(f"Error updating post in repository: {e}", exc_info=True)
                 raise
         except ValueError as ve:
             logger.warning(f"ValueError: {ve}")
             raise Exception("Failed to update post.")
         except Exception as e:
-            logger.error(f"Error updating post ID {post_id}: {e}")
+            logger.error(f"Error updating post ID {post_id}: {e}", exc_info=True)
             raise Exception("Failed to update post.")
         return res
 
@@ -204,7 +210,7 @@ class PostService:
                     order_by="id",
                 )
             except Exception as e:
-                logger.error(f"Error filtering posts: {e}")
+                logger.error(f"Error filtering posts: {e}", exc_info=True)
                 raise
             try:
                 for post in posts:
@@ -219,11 +225,11 @@ class PostService:
                             post["video_id"]
                         )
             except Exception as e:
-                logger.error(f"Error processing filtered posts: {e}")
+                logger.error(f"Error processing filtered posts: {e}", exc_info=True)
                 raise
             return posts
         except Exception as e:
-            logger.error(f"Error filtering posts by date: {e}")
+            logger.error(f"Error filtering posts by date: {e}", exc_info=True)
             raise Exception("Failed to filter posts.")
 
     def delete_post(self, post_id: int):
@@ -231,7 +237,7 @@ class PostService:
             logger.debug(f"Deleting post with ID: {post_id}")
             self.repo.delete(post_id)
         except Exception as e:
-            logger.error(f"Error deleting post ID {post_id}: {e}")
+            logger.error(f"Error deleting post ID {post_id}: {e}", exc_info=True)
             raise Exception(f"Error deleting post ({post_id}).")
 
     def upload_image(self, file: FileStorage) -> Optional[str]:
@@ -243,12 +249,14 @@ class PostService:
                     image_url: Optional[str] = self.repo.upload_file(file, filename)
                     return image_url
                 except Exception as e:
-                    logger.error(f"Error uploading file to repository: {e}")
+                    logger.error(
+                        f"Error uploading file to repository: {e}", exc_info=True
+                    )
                     raise
             else:
                 return None
         except Exception as e:
-            logger.error(f"Error uploading image: {e}")
+            logger.error(f"Error uploading image: {e}", exc_info=True)
             raise Exception("Failed to upload image.")
 
     def has_next_page(self, page: int) -> bool:
@@ -256,7 +264,7 @@ class PostService:
             logger.debug(f"Checking for next page after page {page}")
             return self.repo.has_next_page(page)
         except Exception as e:
-            logger.error(f"Error checking for next page: {e}")
+            logger.error(f"Error checking for next page: {e}", exc_info=True)
             raise Exception("Failed to check for next page.")
 
     def _format_date(self, year: int, month: int, day: int, time: str) -> str:
@@ -282,7 +290,7 @@ class PostService:
                 "Time": datetime.now(utc).strftime("%H:%M:%S"),
             }
         except Exception as e:
-            logger.error(f"Error getting current timestamp: {e}")
+            logger.error(f"Error getting current timestamp: {e}", exc_info=True)
             raise
 
     def _allowed_file(self, filename: str) -> bool:
@@ -292,7 +300,7 @@ class PostService:
                 and filename.rsplit(".", 1)[1].lower() in self.config.ALLOWED_EXTENSIONS
             )
         except Exception as e:
-            logger.error(f"Error checking allowed file: {e}")
+            logger.error(f"Error checking allowed file: {e}", exc_info=True)
             raise
 
     def __del__(self):

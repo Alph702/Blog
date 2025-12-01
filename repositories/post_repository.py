@@ -22,7 +22,7 @@ class PostRepository:
                 return [item for item in data if isinstance(item, dict)]
             return []
         except Exception as e:
-            logger.error(f"Error extracting records: {e}")
+            logger.error(f"Error extracting records: {e}", exc_info=True)
             raise RuntimeError(f"Error extracting records: {e}")
 
     def get_all(
@@ -43,7 +43,7 @@ class PostRepository:
             data = getattr(response, "data", None)
             return self._extract_records(data)
         except Exception as e:
-            logger.error(f"Error fetching posts: {e}")
+            logger.error(f"Error fetching posts: {e}", exc_info=True)
             raise RuntimeError(f"Error fetching posts: {e}")
 
     def get_by_id(self, post_id: int) -> Optional[Dict[str, Any]]:
@@ -62,7 +62,7 @@ class PostRepository:
             records = self._extract_records(data)
             return records[0] if records else None
         except Exception as e:
-            logger.error(f"Error fetching post with id=({post_id}): {e}")
+            logger.error(f"Error fetching post with id=({post_id}): {e}", exc_info=True)
             raise RuntimeError(f"Error fetching post with id=({post_id}): {e}")
 
     def create(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -71,7 +71,8 @@ class PostRepository:
             response = self.client.table("posts").insert(data).execute()
             if getattr(response, "error", None):
                 logger.error(
-                    f"Error creating post: {getattr(response, 'error', 'Unknown error')}"
+                    f"Error creating post: {getattr(response, 'error', 'Unknown error')}",
+                    exc_info=True,
                 )
                 raise RuntimeError(
                     f"Error creating post: {getattr(response, 'error', 'Unknown error')}"
@@ -79,7 +80,7 @@ class PostRepository:
             records = self._extract_records(getattr(response, "data", None))
             return records[0] if records else None
         except Exception as e:
-            logger.error(f"Error creating post: {e}")
+            logger.error(f"Error creating post: {e}", exc_info=True)
             raise RuntimeError(f"Error creating post: {e}")
 
     def update(self, post_id: int, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -90,7 +91,8 @@ class PostRepository:
             )
             if getattr(response, "error", None):
                 logger.error(
-                    f"Error updating post: {getattr(response, 'error', 'Unknown error')}"
+                    f"Error updating post: {getattr(response, 'error', 'Unknown error')}",
+                    exc_info=True,
                 )
                 raise RuntimeError(
                     f"Error updating post: {getattr(response, 'error', 'Unknown error')}"
@@ -98,7 +100,7 @@ class PostRepository:
             records = self._extract_records(getattr(response, "data", None))
             return records[0] if records else None
         except Exception as e:
-            logger.error(f"Error updating post: {e}")
+            logger.error(f"Error updating post: {e}", exc_info=True)
             raise RuntimeError(f"Error updating post: {e}")
 
     def delete(self, post_id: int):
@@ -106,7 +108,7 @@ class PostRepository:
         try:
             self.client.table("posts").delete().eq("id", post_id).execute()
         except Exception as e:
-            logger.error(f"Error deleting post: {e}")
+            logger.error(f"Error deleting post: {e}", exc_info=True)
             raise RuntimeError(f"Error deleting post: {e}")
 
     def filter_by_date(
@@ -138,7 +140,8 @@ class PostRepository:
             response = query.execute()
             if getattr(response, "error", None):
                 logger.error(
-                    f"Error filtering posts: {getattr(response, 'error', 'Unknown error')}"
+                    f"Error filtering posts: {getattr(response, 'error', 'Unknown error')}",
+                    exc_info=True,
                 )
                 return []
 
@@ -146,7 +149,7 @@ class PostRepository:
             posts = self._extract_records(data)
             return posts
         except Exception as e:
-            logger.error(f"Error filtering posts: {e}")
+            logger.error(f"Error filtering posts: {e}", exc_info=True)
             raise RuntimeError(f"Error filtering posts: {e}")
 
     def upload_file(self, file: FileStorage, file_name: str) -> Optional[str]:
@@ -156,7 +159,9 @@ class PostRepository:
                 file_bytes = file.read()
             except Exception as e:
                 file_bytes = None
-                logger.error(f"Failed to read uploaded file into memory: {e}")
+                logger.error(
+                    f"Failed to read uploaded file into memory: {e}", exc_info=True
+                )
                 raise RuntimeError(f"Failed to read uploaded file into memory: {e}")
 
             if file_bytes:
@@ -176,19 +181,22 @@ class PostRepository:
                         else:
                             image_url = None
                             logger.error(
-                                f"Failed to upload file to Supabase storage: {e} with status {getattr(e, 'status', 'unknown')}"
+                                f"Failed to upload file to Supabase storage: {e} with status {getattr(e, 'status', 'unknown')}",
+                                exc_info=True,
                             )
                             raise RuntimeError(
                                 f"Failed to upload file to Supabase storage: {e} with status {getattr(e, 'status', 'unknown')}"
                             )
                 except Exception as e:
                     image_url = None
-                    logger.error(f"Error during file upload process: {e}")
+                    logger.error(
+                        f"Error during file upload process: {e}", exc_info=True
+                    )
                     raise RuntimeError(f"Error during file upload process: {e}")
                 return image_url
             return None
         except Exception as e:
-            logger.error(f"Error uploading file: {e}")
+            logger.error(f"Error uploading file: {e}", exc_info=True)
             raise RuntimeError(f"Error uploading file: {e}")
 
     def has_next_page(self, page: int) -> bool:
@@ -209,7 +217,7 @@ class PostRepository:
             count = len(records)
             return True if count > 0 else False
         except Exception:
-            logger.error("Error checking for next page.")
+            logger.error("Error checking for next page.", exc_info=True)
             raise RuntimeError("Error checking for next page.")
 
     def __del__(self):

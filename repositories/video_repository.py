@@ -36,7 +36,8 @@ class VideoRepository:
             )
             if getattr(response, "error", None):
                 logger.error(
-                    f"Error fetching video by ID {video_id}: {getattr(response, 'error')}"
+                    f"Error fetching video by ID {video_id}: {getattr(response, 'error')}",
+                    exc_info=True,
                 )
                 raise RuntimeError(
                     f"Query failed: {getattr(response, 'error', 'Unknown error')}"
@@ -78,7 +79,8 @@ class VideoRepository:
             )
             if getattr(response, "error", None):
                 logger.error(
-                    f"Error updating video ID {video_id}: {getattr(response, 'error')}"
+                    f"Error updating video ID {video_id}: {getattr(response, 'error')}",
+                    exc_info=True,
                 )
                 raise RuntimeError(
                     f"Update failed: {getattr(response, 'error', 'Unknown error')}"

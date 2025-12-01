@@ -555,23 +555,23 @@ sequenceDiagram
 - [x] **Create `utils` Directory**: If it doesn't exist, create `Blog/utils/`.
 - [x] **Create `utils/logger.py`**: Implement the `setup_logging` function as provided.
 - [x] **Update `config.py`**: Add `LOG_LEVEL` and `LOG_FILE` properties, ensuring environment variable support.
-- [] **Update `app.py`**:
+- [x] **Update `app.py`**:
     - [x] Import `setup_logging` from `utils.logger`.
     - [x] Call `setup_logging(app=app, log_file=Config.LOG_FILE, level=Config.LOGGING_LEVEL)` early in the app initialization.
-    - [] Add an example `app.logger.info()` and `app.logger.debug()` call.
-    - [] Implement a general `app.errorhandler(Exception)` to catch and log unhandled exceptions with `exc_info=True`.
+    - [x] Add an example `app.logger.info()` and `app.logger.debug()` call.
+    - [x] Implement a general `app.errorhandler(Exception)` to catch and log unhandled exceptions with `exc_info=True`.
 - [x] **Integrate Logging in `blueprints/*.py`**:
     - [x] Import `logging` at the top of each blueprint file.
     - [x] Add `logger = logging.getLogger(__name__)` at the module level.
     - [x] Replace `print()` statements and add appropriate `logger.info()`, `logger.debug()`, `logger.warning()`, and `logger.error(..., exc_info=True)` calls.
-- [ ] **Integrate Logging in `services/*.py`**:
-    - [ ] Import `logging` at the top of each service file.
-    - [ ] Add `logger = logging.getLogger(__name__)` at the module level.
-    - [ ] Replace `print()` statements and add appropriate `logger.info()`, `logger.debug()`, `logger.warning()`, and `logger.error(..., exc_info=True)` calls.
-- [ ] **Integrate Logging in `repositories/*.py`**:
-    - [ ] Import `logging` at the top of each repository file.
-    - [ ] Add `logger = logging.getLogger(__name__)` at the module level.
-    - [ ] Replace `print()` statements and add appropriate `logger.info()`, `logger.debug()`, `logger.warning()`, and `logger.error(..., exc_info=True)` calls. Also, refine error handling to log database-specific exceptions accurately.
+- [x] **Integrate Logging in `services/*.py`**:
+    - [x] Import `logging` at the top of each service file.
+    - [x] Add `logger = logging.getLogger(__name__)` at the module level.
+    - [x] Replace `print()` statements and add appropriate `logger.info()`, `logger.debug()`, `logger.warning()`, and `logger.error(..., exc_info=True)` calls.
+- [x] **Integrate Logging in `repositories/*.py`**:
+    - [x] Import `logging` at the top of each repository file.
+    - [x] Add `logger = logging.getLogger(__name__)` at the module level.
+    - [x] Replace `print()` statements and add appropriate `logger.info()`, `logger.debug()`, `logger.warning()`, and `logger.error(..., exc_info=True)` calls. Also, refine error handling to log database-specific exceptions accurately.
 - [ ] **Test Log Output**:
     - [ ] Run the application and verify console output.
     - [ ] Check for the creation of the `logs/app.log` file and its contents.

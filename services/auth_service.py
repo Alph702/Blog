@@ -23,7 +23,7 @@ class AuthService:
                 username == Config.ADMIN_USERNAME and password == Config.ADMIN_PASSWORD
             )
         except Exception as e:
-            logger.error(f"Authentication failed: {e}")
+            logger.error(f"Authentication failed: {e}", exc_info=True)
             raise Exception("Authentication error")
 
     def create_persistent_token(self, user_id: str) -> str:
@@ -36,7 +36,7 @@ class AuthService:
             self.repo.create_persistent_login(user_id, hashed_token, expires_at)
             return token
         except Exception as e:
-            logger.error(f"Failed to create persistent token: {e}")
+            logger.error(f"Failed to create persistent token: {e}", exc_info=True)
             raise Exception("Token creation failed")
 
     def check_token(self, token: str) -> bool:
@@ -56,7 +56,7 @@ class AuthService:
             expires_at: datetime = datetime.fromisoformat(login["expires_at"])
             return expires_at > datetime.now(pytz.utc)
         except Exception as e:
-            logger.error(f"Token validation failed: {e}")
+            logger.error(f"Token validation failed: {e}", exc_info=True)
             raise Exception("Token validation error")
 
     def revoke_token(self, token: str) -> None:
@@ -67,7 +67,7 @@ class AuthService:
             hashed_token: str = hashlib.sha256(token.encode()).hexdigest()
             self.repo.delete_persistent_login(hashed_token)
         except Exception as e:
-            logger.error(f"Failed to revoke token: {e}")
+            logger.error(f"Failed to revoke token: {e}", exc_info=True)
             raise Exception("Token revocation failed")
 
     def __del__(self):

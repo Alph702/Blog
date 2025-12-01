@@ -31,7 +31,7 @@ def new_post():
                 logger.error(f"Missing form field: {e}", exc_info=True)
                 flash("Please fill in all required fields.", "error")
                 return render_template("new.html")
-            
+
             try:
                 image_url = None
                 if "image" in request.files:
@@ -82,7 +82,10 @@ def edit_post(post_id: int):
                 video = request.files.get("video")
             except Exception as e:
                 logger.error(f"Error processing form data: {e}", exc_info=True)
-                flash("There was an error with your submission. Please try again.", "error")
+                flash(
+                    "There was an error with your submission. Please try again.",
+                    "error",
+                )
                 return redirect(url_for("admin.edit_post", post_id=post_id))
             try:
                 post_service.update_post(post_id, title, content, image, video)

@@ -51,7 +51,7 @@ class WorkerService:
                     {"content-type": file.content_type},
                 )
             except Exception as e:
-                logger.error(f"Error uploading file to storage: {e}")
+                logger.error(f"Error uploading file to storage: {e}", exc_info=True)
                 raise RuntimeError(f"Error uploading file to storage: {e}")
 
             # Insert record
@@ -60,7 +60,9 @@ class WorkerService:
                     {"filename": filename, "filepath": filepath}
                 ).execute()
             except Exception as e:
-                logger.error(f"Error inserting file record into database: {e}")
+                logger.error(
+                    f"Error inserting file record into database: {e}", exc_info=True
+                )
                 raise RuntimeError(f"Error inserting file record into database: {e}")
 
             # Get ID
@@ -79,7 +81,9 @@ class WorkerService:
                     if isinstance(first_row, dict) and "id" in first_row:
                         file_id = first_row["id"]
             except Exception as e:
-                logger.error(f"Error retrieving file ID from database: {e}")
+                logger.error(
+                    f"Error retrieving file ID from database: {e}", exc_info=True
+                )
                 raise RuntimeError(f"Error retrieving file ID from database: {e}")
 
             return {
@@ -155,7 +159,7 @@ class WorkerService:
                 raise RuntimeError(f"Error scheduling file processing: {e}")
             return int(file_id)
         except Exception as e:
-            logger.error(f"Error queueing file: {e}")
+            logger.error(f"Error queueing file: {e}", exc_info=True)
             raise RuntimeError(f"Error queueing file: {e}")
 
     def __del__(self):
