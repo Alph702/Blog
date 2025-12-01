@@ -4,7 +4,7 @@
  */
 export async function checkSession() {
     try {
-        const response = await fetch('/check_session');
+        const response = await fetch('/check_admin');
         const data = await response.json();
         return data.admin;
     } catch {
