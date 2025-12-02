@@ -78,7 +78,6 @@ def setup_logging(
         # Also add file handler to root logger
         root_logger.addHandler(file_handler)
 
-    # TODO: Update this list as you add more modules
     app_loggers = [
         "auth",
         "blog",
