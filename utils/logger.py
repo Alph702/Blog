@@ -33,6 +33,10 @@ def setup_logging(
 
     target_logger.setLevel(level)
 
+    # Set root logger to WARNING by default to suppress external library logs
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.WARNING)
+
     for handler in list(target_logger.handlers):
         target_logger.removeHandler(handler)
 
@@ -42,7 +46,13 @@ def setup_logging(
         "{%(asctime)s} - [%(levelname)s] in %(module)s - (%(name)s) -- [%(filename)s::%(funcName)s:%(lineno)d]: %(message)s"
     )
     console_handler.setFormatter(console_formatter)
+    console_handler.setLevel(level)  # Set handler level to capture our logs
     target_logger.addHandler(console_handler)
+
+    # Also add handlers to root logger so app module loggers propagate correctly
+    for handler in list(root_logger.handlers):
+        root_logger.removeHandler(handler)
+    root_logger.addHandler(console_handler)
 
     file_path = ""
     # 2. File Handler: Outputs logs to a rotating file
@@ -62,16 +72,46 @@ def setup_logging(
             "{%(asctime)s} - [%(levelname)s] in %(module)s - (%(name)s) -- [%(filename)s::%(funcName)s:%(lineno)d]: %(message)s"
         )
         file_handler.setFormatter(file_formatter)
+        file_handler.setLevel(level)  # Set handler level to capture our logs
         target_logger.addHandler(file_handler)
 
-    # Suppress verbose loggers from external libraries if not in DEBUG mode
-    if level > logging.DEBUG:
-        logging.getLogger("werkzeug").setLevel(
-            logging.WARNING
-        )  # Flask's internal web server
-        logging.getLogger("supabase").setLevel(
-            logging.WARNING
-        )  # Supabase client library
+        # Also add file handler to root logger
+        root_logger.addHandler(file_handler)
+
+    # TODO: Update this list as you add more modules
+    app_loggers = [
+        "auth",
+        "blog",
+        "admin",
+        "api",
+        "blueprints",
+        "auth.blueprints",
+        "auth.service",
+        "auth.repository",
+        "blog.blueprints",
+        "admin.blueprints",
+        "api.blueprints",
+        "repositories",
+        "post.repository",
+        "video.repository",
+        "post.service",
+        "video.service",
+        "auth.service",
+        "worker.service",
+        "services",
+        "app",
+        "config",
+        "container",
+        "worker",
+    ]
+    for logger_name in app_loggers:
+        logging.getLogger(logger_name).setLevel(level)
+
+    # Suppress verbose loggers from external libraries
+    logging.getLogger("werkzeug").setLevel(logging.WARNING)
+    logging.getLogger("supabase").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+    logging.getLogger("requests").setLevel(logging.WARNING)
 
     target_logger.info(f"Logging configured with level: {logging.getLevelName(level)}")
     if log_file:

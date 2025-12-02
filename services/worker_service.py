@@ -12,7 +12,7 @@ from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.schedulers.background import BackgroundScheduler
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("worker.service")
 
 
 class WorkerService:
