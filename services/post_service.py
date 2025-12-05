@@ -108,6 +108,7 @@ class PostService:
                 logger.debug("Preparing post data")
                 timestamp: Dict[str, str] = self._get_current_timestamp()
                 data = {
+                    "id": self.repo.get_new_id(),
                     "title": title,
                     "content": content,
                     "image": image_url,
@@ -127,14 +128,10 @@ class PostService:
                 logger.debug("Calling repo.create()")
                 res = self.repo.create(data)
             except Exception as e:
-                if getattr(e, "code", None) == "23505":  # Unique violation
-                    logger.warning("Post with the same id already exists.")
-                    raise ValueError("Post with the same id already exists.")
-                else:
-                    logger.error(
-                        f"Error creating post in repository: {e}", exc_info=True
-                    )
-                    raise Exception("Failed to create post.")
+                logger.error(
+                    f"Error creating post in repository: {e}", exc_info=True
+                )
+                raise Exception("Failed to create post.")
         except ValueError as ve:
             logger.warning(f"ValueError: {ve}")
             raise Exception("Failed to create post.")

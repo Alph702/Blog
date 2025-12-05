@@ -285,5 +285,31 @@ class PostRepository:
             logger.error("Error checking for next page.", exc_info=True)
             raise RuntimeError("Error checking for next page.")
 
+    def get_new_id(self) -> int:
+        try:
+            logger.debug("Fetching latest post ID to generate new ID")
+            response = self.client.table("posts").select("id").order("id", desc=True).limit(1).execute()
+            if getattr(response, "error", None):
+                logger.error(
+                    f"Error fetching latest ID: {getattr(response, 'error', 'Unknown error')}",
+                    exc_info=True,
+                )
+                raise RuntimeError(
+                    f"Error fetching latest ID: {getattr(response, 'error', 'Unknown error')}"
+                )
+            logger.debug("Extracting latest ID from response")
+            data = getattr(response, "data", None)
+            logger.debug(f"Data received for latest ID: {data}")
+            records = self._extract_records(data)
+            logger.debug(f"Latest record found: {records}")
+            if records:
+                id: int = records[0]["id"] + 1
+                logger.debug(f"New ID generated: {id}")
+                return id
+            return 1
+        except Exception as e:
+            logger.error(f"Error fetching latest ID: {e}", exc_info=True)
+            raise RuntimeError(f"Error fetching latest ID: {e}")
+
     def __del__(self):
         logger.debug("Destroying PostRepository instance.")
