@@ -270,6 +270,25 @@ class PostService:
         except Exception as e:
             logger.error(f"Error uploading image: {e}", exc_info=True)
             raise Exception("Failed to upload image.")
+    
+    def upload_video(self, file: FileStorage) -> Optional[int]:
+        try:
+            logger.debug(f"upload_video() called with filename: {file.filename}")
+            if file and self._allowed_file(str(file.filename)):
+                logger.debug(f"File is allowed, uploading: {file.filename}")
+                try:
+                    video_id: Optional[int] = self.video_service.upload_video(file)
+                    return video_id
+                except Exception as e:
+                    logger.error(
+                        f"Error uploading video to video service: {e}", exc_info=True
+                    )
+                    raise
+            else:
+                return None
+        except Exception as e:
+            logger.error(f"Error uploading video: {e}", exc_info=True)
+            raise Exception("Failed to upload video.")
 
     def has_next_page(self, page: int) -> bool:
         try:

@@ -45,7 +45,7 @@ def new_post():
             try:
                 logger.debug("Checking for image file in request")
                 image_url = None
-                if "image" in request.files:
+                if "image" in request.files and request.files["image"].filename != "":
                     logger.debug("Image file found, uploading")
                     image_url = post_service.upload_image(request.files["image"])
                     logger.debug(f"Image upload completed: {image_url}")
@@ -57,7 +57,7 @@ def new_post():
             try:
                 logger.debug("Checking for video file in request")
                 video_id = None
-                if "video" in request.files:
+                if "video" in request.files and request.files["video"].filename != "":
                     logger.debug("Video file found, uploading")
                     video_id = video_service.upload_video(request.files["video"])
                     logger.debug(f"Video upload completed: {video_id}")
