@@ -572,10 +572,10 @@ sequenceDiagram
     - [x] Import `logging` at the top of each repository file.
     - [x] Add `logger = logging.getLogger(__name__)` at the module level.
     - [x] Replace `print()` statements and add appropriate `logger.info()`, `logger.debug()`, `logger.warning()`, and `logger.error(..., exc_info=True)` calls. Also, refine error handling to log database-specific exceptions accurately.
-- [ ] **Test Log Output**:
-    - [ ] Run the application and verify console output.
-    - [ ] Check for the creation of the `logs/app.log` file and its contents.
-    - [ ] Verify log rotation works (requires generating enough logs to exceed size limit).
-    - [ ] Confirm different log levels (e.g., `DEBUG` vs `INFO`) are respected based on `LOG_LEVEL` environment variable.
-    - [ ] Induce an error to confirm exception logging with traceback.
-- [ ] **Update `.gitignore`**: Add `/logs/` to prevent log files from being committed to version control.
+- [x] **Test Log Output**:
+    - [x] Run the application and verify console output.
+    - [x] Check for the creation of the `logs/app.log` file and its contents.
+    - [x] Verify log rotation works (requires generating enough logs to exceed size limit).
+    - [x] Confirm different log levels (e.g., `DEBUG` vs `INFO`) are respected based on `LOG_LEVEL` environment variable.
+    - [x] Induce an error to confirm exception logging with traceback.
+- [x] **Update `.gitignore`**: Add `/logs/` to prevent log files from being committed to version control.
