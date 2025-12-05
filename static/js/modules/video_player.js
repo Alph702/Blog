@@ -12,9 +12,28 @@ export class VideoPlayer {
         this.hlsInstance = null;
         this.currentQualityLevel = -1;
         this.controlsTimeout = null;
+        this.warningCount = 0;
+        this.maxWarnings = 10;
 
+        this.bindMethods();
         this.initControls();
         this.initVideo();
+    }
+
+    bindMethods() {
+        this.togglePlayPause = this.togglePlayPause.bind(this);
+        this.updatePlayPauseButton = this.updatePlayPauseButton.bind(this);
+        this.updateProgressBar = this.updateProgressBar.bind(this);
+        this.seekVideo = this.seekVideo.bind(this);
+        this.toggleMute = this.toggleMute.bind(this);
+        this.changeVolume = this.changeVolume.bind(this);
+        this.updateMuteButton = this.updateMuteButton.bind(this);
+        this.toggleFullscreen = this.toggleFullscreen.bind(this);
+        this.updateFullscreenButton = this.updateFullscreenButton.bind(this);
+        this.togglePip = this.togglePip.bind(this);
+        this.showControls = this.showControls.bind(this);
+        this.hideControls = this.hideControls.bind(this);
+        this.hideControlsAfterDelay = this.hideControlsAfterDelay.bind(this);
     }
 
     initControls() {
@@ -69,14 +88,14 @@ export class VideoPlayer {
 
         this.qualityBtn.addEventListener("click", (e) => {
             e.stopPropagation();
-            qualityOptionsUl.classList.toggle("active");
-            speedOptionsUl.classList.remove("active");
+            this.qualityOptionsUl.classList.toggle("active");
+            this.speedOptionsUl.classList.remove("active");
         });
 
         this.speedBtn.addEventListener("click", (e) => {
             e.stopPropagation();
-            speedOptionsUl.classList.toggle("active");
-            qualityOptionsUl.classList.remove("active");
+            this.speedOptionsUl.classList.toggle("active");
+            this.qualityOptionsUl.classList.remove("active");
         });
 
         this.speedOptionsUl.querySelectorAll("li").forEach((li) => {
@@ -115,7 +134,7 @@ export class VideoPlayer {
     }
 
     initVideo() {
-        const url = this.videoEl.dataset.url;
+        const url = this.videoEl.dataset.filepath;
         const status = this.videoEl.dataset.status;
 
         if (url && status === "processed") {
@@ -123,18 +142,17 @@ export class VideoPlayer {
                 this.hlsInstance = new Hls();
                 this.hlsInstance.loadSource(url);
                 this.hlsInstance.attachMedia(this.videoEl);
-                const this_ = this;
-                this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+                this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
                     console.log("HLS Manifest Parsed. Available levels:", data.levels);
                     if (data.levels && data.levels.length > 1) {
-                        this_.buildQualityOptions(data.levels);
-                        this_.qualityBtn.style.display = "";
+                        this.buildQualityOptions(data.levels);
+                        this.qualityBtn.style.display = "";
                     } else {
-                        this_.qualityBtn.style.display = "none";
+                        this.qualityBtn.style.display = "none";
                     }
                 });
 
-                this.hlsInstance.on(Hls.Events.LEVEL_SWITCHED, function (event, data) {
+                this.hlsInstance.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
                     this.currentQualityLevel = data.level;
                     this.qualityOptionsUl.querySelectorAll("li").forEach((li) => {
                         li.classList.remove("active");
@@ -144,27 +162,32 @@ export class VideoPlayer {
                     });
                 });
 
-                this.hlsInstance.on(Hls.Events.ERROR, function (event, data) {
+                this.hlsInstance.on(Hls.Events.ERROR, (event, data) => {
                     if (data.fatal) {
                         switch (data.type) {
-                            case Hls.ErrorTypes.NETWORK_ERROR:
+                            case "networkError":
                                 showToast("A network error occurred while streaming the video.", "error");
                                 console.error("HLS fatal network error:", data);
                                 break;
-                            case Hls.ErrorTypes.MEDIA_ERROR:
+                            case "mediaError":
                                 showToast("A media error occurred while streaming the video.", "error");
                                 console.error("HLS fatal media error:", data);
-                                hlsInstance.recoverMediaError();
+                                this.hlsInstance.recoverMediaError();
                                 break;
                             default:
                                 showToast("An unrecoverable error occurred while streaming the video.", "error");
                                 console.error("HLS fatal error:", data);
-                                hlsInstance.destroy();
+                                this.hlsInstance.destroy();
                                 break;
                         }
                     } else {
-                        showToast("A non-fatal error occurred while streaming the video.", "warning");
-                        console.warn("HLS non-fatal error:", data);
+                        this.warningCount++;
+                        if (this.warningCount >= this.maxWarnings) {
+                            showToast("Multiple non-fatal errors occurred while streaming the video.", "warning");
+                            console.warn("HLS multiple non-fatal errors, destroying HLS instance.");
+                        } else {
+                            console.warn("HLS non-fatal error:", data);
+                        }
                     }
                 });
             } else if (this.videoEl.canPlayType("application/vnd.apple.mpegurl")) {
