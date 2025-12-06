@@ -1,6 +1,6 @@
 import { fetchPosts, initTimestampHandlers } from './modules/api.js';
 import { checkSession } from './modules/auth.js';
-import { initToastHandlers, initLazyPostLoading } from './modules/ui.js';
+import { initToastHandlers, initLazyPostLoading, toggleFilter } from './modules/ui.js';
 import { VideoPlayer } from './modules/video_player.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -18,3 +18,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         new VideoPlayer(container);
     });
 });
+
+export { fetchPosts, toggleFilter };
+
+// Make toggleFilter available globally for inline onclick handlers
+window.toggleFilter = toggleFilter;
