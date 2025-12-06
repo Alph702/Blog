@@ -1,4 +1,3 @@
-from typing import Any, Dict
 from flask import (
     Blueprint,
     flash,
@@ -26,13 +25,18 @@ def home():
     try:
         logger.debug("Calling post_service.get_recent_posts()")
         posts = post_service.get_recent_posts()
-        logger.debug(f"Retrieved {len(posts)} posts")
+        logger.debug(f"Retrieved {len(posts.posts)} posts")
+        logger.debug(f"Rendering index.html with {len(posts.posts)} posts")
+        return render_template(
+            "index.html", posts=posts.posts, admin=session.get("admin", False)
+        )
     except Exception as e:
         logger.critical(f"Error fetching recent posts: {e}")
         posts = []
         flash("Failed to load posts", "error")
-    logger.debug(f"Rendering index.html with {len(posts)} posts")
-    return render_template("index.html", posts=posts, admin=session.get("admin", False))
+        return render_template(
+            "index.html", posts=posts, admin=session.get("admin", False)
+        )
 
 
 @blog_bp.route("/filter")
@@ -46,16 +50,21 @@ def filter_posts():
     # TODO: create a system to get posts by date pur page
     try:
         logger.debug("Calling post_service.filter_posts()")
-        posts: list[Dict[str, Any]] = post_service.filter_posts(year, month, day)
-        logger.debug(f"Filtered posts retrieved: {len(posts)}")
+        posts = post_service.filter_posts(year, month, day)
+        logger.debug(f"Filtered posts retrieved: {len(posts.posts)}")
+        logger.debug("Rendering index.html with filtered posts")
+        return render_template(
+            "index.html", posts=posts.posts, admin=session.get("admin", False)
+        )
     except Exception as e:
         logger.error(
             f"Error filtering posts by date {year}-{month}-{day}: {e}", exc_info=True
         )
         posts = []
         flash("Failed to filter posts", "error")
-    logger.debug("Rendering index.html with filtered posts")
-    return render_template("index.html", posts=posts)
+        return render_template(
+            "index.html", posts=posts, admin=session.get("admin", False)
+        )
 
 
 @blog_bp.route("/post/<int:post_id>")

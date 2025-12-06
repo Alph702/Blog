@@ -29,6 +29,7 @@ def admin_required(f):
 def new_post():
     logger.debug("new_post() route handler called")
     try:
+        # TODO: Remove unnassesary nested try-except blocks and validation
         if request.method == "POST":
             logger.debug("Processing POST request for new post")
             try:
@@ -36,7 +37,7 @@ def new_post():
                 title = request.form["title"]
                 logger.debug(f"Title extracted: {title}")
                 content = request.form["content"]
-                logger.debug("Content extracted")
+                logger.debug(f"Content extracted: {content}")
             except KeyError as e:
                 logger.error(f"Missing form field: {e}", exc_info=True)
                 flash("Please fill in all required fields.", "error")

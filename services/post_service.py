@@ -1,5 +1,5 @@
-from typing import List, Dict, Any, Optional, cast
-from repositories import PostRepository
+from typing import Dict, Optional
+from repositories.post_repository import PostRepository, PostsModel, PostModel
 from .video_service import VideoService
 from dateutil import parser
 from config import Config
@@ -11,21 +11,21 @@ logger = logging.getLogger("post.service")
 
 
 class PostService:
-    def __init__(self, repo: PostRepository, video_service: VideoService):
+    def __init__(self, repo: PostRepository, video_service: VideoService) -> None:
         self.repo: PostRepository = repo
         self.video_service: VideoService = video_service
         self.config: Config = Config()
         self.limit: int = self.config.POSTS_PER_PAGE
         logger.info("PostService initialized!")
 
-    def get_recent_posts(self, page: int = 1) -> List[Dict[str, Any]]:
+    def get_recent_posts(self, page: int = 1) -> PostsModel:
         logger.debug(f"get_recent_posts() called with page: {page}")
         offset: int = (page - 1) * self.limit
         logger.debug(f"Calculated offset: {offset}, limit: {self.limit}")
         try:
             try:
                 logger.debug("Calling repo.get_all() with pagination")
-                posts: List[Dict[str, Any]] = self.repo.get_all(
+                posts: PostsModel = self.repo.get_all(
                     limit=self.limit, offset=offset, order_by="timestamp" or "id"
                 )
             except Exception as e:
@@ -34,20 +34,18 @@ class PostService:
                 )
                 raise Exception("Failed to retrieve posts.")
 
-            logger.debug(f"Retrieved {len(posts)} posts from repository")
+            logger.debug(f"Retrieved {len(posts.posts)} posts from repository")
             try:
                 logger.debug("Processing posts and formatting timestamps")
-                for post in posts:
-                    post["timestamps"] = self._format_date(
-                        cast(int, post.get("created_year")),
-                        cast(int, post.get("created_month")),
-                        cast(int, post.get("created_day")),
-                        cast(str, post.get("created_time")),
+                for post in posts.posts:
+                    post.timestamps = self._format_date(
+                        post.created_year,
+                        post.created_month,
+                        post.created_day,
+                        post.created_time,
                     )
-                    if post.get("video_id"):
-                        post["video"] = self.video_service.get_video_by_id(
-                            post["video_id"]
-                        )
+                    if post.video_id:
+                        post.video = self.video_service.get_video_by_id(post.video_id)
 
                     logger.debug(f"Post: {post}")
             except Exception as e:
@@ -58,7 +56,7 @@ class PostService:
             logger.error(f"Error retrieving recent posts: {e}", exc_info=True)
             raise Exception("Failed to retrieve recent posts.")
 
-    def get_post_by_id(self, post_id: int) -> Optional[Dict[str, Any]]:
+    def get_post_by_id(self, post_id: int) -> Optional[PostModel]:
         try:
             try:
                 logger.debug(f"get_post_by_id() called with post_id: {post_id}")
@@ -71,16 +69,14 @@ class PostService:
             try:
                 logger.debug("Processing post data and formatting timestamps")
                 if post:
-                    post["timestamps"] = self._format_date(
-                        cast(int, post.get("created_year")),
-                        cast(int, post.get("created_month")),
-                        cast(int, post.get("created_day")),
-                        cast(str, post.get("created_time")),
+                    post.timestamps = self._format_date(
+                        post.created_year,
+                        post.created_month,
+                        post.created_day,
+                        post.created_time,
                     )
-                    if post.get("video_id"):
-                        post["video"] = self.video_service.get_video_by_id(
-                            post["video_id"]
-                        )
+                    if post.video_id:
+                        post.video = self.video_service.get_video_by_id(post.video_id)
                     return post
                 else:
                     logger.warning(f"Post with ID {post_id} not found")
@@ -101,36 +97,35 @@ class PostService:
         content: str,
         image_url: Optional[str] = None,
         video_id: Optional[int] = None,
-    ):
+    ) -> PostModel:
         logger.debug(f"create_post() called with title: {title}")
         try:
             try:
                 logger.debug("Preparing post data")
                 timestamp: Dict[str, str] = self._get_current_timestamp()
-                data = {
-                    "id": self.repo.get_new_id(),
-                    "title": title,
-                    "content": content,
-                    "image": image_url,
-                    "video_id": video_id,
-                    "created_year": timestamp["Year"],
-                    "created_month": timestamp["Month"],
-                    "created_day": timestamp["Day"],
-                    "created_time": timestamp["Time"],
-                }
+                post = PostModel(
+                    id=self.repo.get_new_id(),
+                    title=title,
+                    content=content,
+                    # TODO: Fix naming inconsistency
+                    image=image_url,
+                    video_id=video_id,
+                    created_year=int(timestamp["Year"]),
+                    created_month=int(timestamp["Month"]),
+                    created_day=int(timestamp["Day"]),
+                    created_time=timestamp["Time"],
+                )
             except Exception as e:
                 logger.error(
                     f"Error preparing post data for creation: {e}", exc_info=True
                 )
                 raise ValueError("Invalid data for creating post.")
-            logger.debug(f"Creating post with data: {data}")
+            logger.debug(f"Creating post with data: {post.model_dump()}")
             try:
                 logger.debug("Calling repo.create()")
-                res = self.repo.create(data)
+                res = self.repo.create(post)
             except Exception as e:
-                logger.error(
-                    f"Error creating post in repository: {e}", exc_info=True
-                )
+                logger.error(f"Error creating post in repository: {e}", exc_info=True)
                 raise Exception("Failed to create post.")
         except ValueError as ve:
             logger.warning(f"ValueError: {ve}")
@@ -147,15 +142,15 @@ class PostService:
         content: str,
         image_file: Optional[FileStorage] = None,
         video_file: Optional[FileStorage] = None,
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[PostModel]:
         try:
             logger.debug(
                 f"update_post() called with post_id: {post_id}, title: {title}"
             )
             try:
                 logger.debug(f"Fetching current post data for post_id: {post_id}")
-                post_data = self.get_post_by_id(post_id)
-                if not post_data:
+                post = self.get_post_by_id(post_id)
+                if not post:
                     logger.warning(f"Post with ID {post_id} not found for update")
                     raise ValueError("Post not found for update")
             except ValueError as ve:
@@ -165,15 +160,16 @@ class PostService:
                 logger.error(f"Error fetching post for update: {e}", exc_info=True)
                 raise
 
-            update_data = {"title": title, "content": content}
-            logger.debug(f"Initial update data: {update_data}")
+            post.title = title
+            post.content = content
+            logger.debug(f"Initial update data: {post.model_dump()}")
 
             try:
                 logger.debug("Checking for image file in update")
                 if image_file:
                     image_url = self.upload_image(image_file)
                     if image_url:
-                        update_data["image"] = image_url
+                        post.image = image_url
             except Exception as e:
                 logger.error(f"Error uploading image: {e}", exc_info=True)
                 raise
@@ -183,14 +179,14 @@ class PostService:
                 if video_file:
                     video_id = self.video_service.upload_video(video_file)
                     if video_id:
-                        update_data["video_id"] = video_id
+                        post.video_id = video_id
             except Exception as e:
                 logger.error(f"Error uploading video: {e}", exc_info=True)
                 raise
-            logger.debug(f"Final update data: {update_data}")
+            logger.debug(f"Final update data: {post.model_dump()}")
             try:
                 logger.debug(f"Calling repo.update() for post_id: {post_id}")
-                res = self.repo.update(post_id, update_data)
+                res = self.repo.update(post)
             except Exception as e:
                 logger.error(f"Error updating post in repository: {e}", exc_info=True)
                 raise
@@ -204,14 +200,14 @@ class PostService:
 
     def filter_posts(
         self, year: str, month: str, day: str, page: int = 1
-    ) -> List[Dict[str, Any]]:
+    ) -> PostsModel:
         try:
             try:
                 logger.debug(
                     f"filter_posts() called - Year: {year}, Month: {month}, Day: {day}, Page: {page}"
                 )
                 logger.debug("Calling repo.filter_by_date()")
-                posts: List[Dict[str, Any]] = self.repo.filter_by_date(
+                posts: PostsModel = self.repo.filter_by_date(
                     year,
                     month,
                     day,
@@ -223,17 +219,15 @@ class PostService:
                 logger.error(f"Error filtering posts: {e}", exc_info=True)
                 raise
             try:
-                for post in posts:
-                    post["formatted_timestamp"] = self._format_date(
-                        cast(int, post.get("created_year")),
-                        cast(int, post.get("created_month")),
-                        cast(int, post.get("created_day")),
-                        cast(str, post.get("created_time")),
+                for post in posts.posts:
+                    post.timestamps = self._format_date(
+                        post.created_year,
+                        post.created_month,
+                        post.created_day,
+                        post.created_time,
                     )
-                    if post.get("video_id"):
-                        post["video"] = self.video_service.get_video_by_id(
-                            post["video_id"]
-                        )
+                    if post.video_id:
+                        post.video = self.video_service.get_video_by_id(post.video_id)
             except Exception as e:
                 logger.error(f"Error processing filtered posts: {e}", exc_info=True)
                 raise
@@ -242,7 +236,7 @@ class PostService:
             logger.error(f"Error filtering posts by date: {e}", exc_info=True)
             raise Exception("Failed to filter posts.")
 
-    def delete_post(self, post_id: int):
+    def delete_post(self, post_id: int) -> None:
         try:
             logger.debug(f"delete_post() called with post_id: {post_id}")
             logger.debug("Calling repo.delete()")
@@ -270,7 +264,7 @@ class PostService:
         except Exception as e:
             logger.error(f"Error uploading image: {e}", exc_info=True)
             raise Exception("Failed to upload image.")
-    
+
     def upload_video(self, file: FileStorage) -> Optional[int]:
         try:
             logger.debug(f"upload_video() called with filename: {file.filename}")
@@ -334,6 +328,3 @@ class PostService:
         except Exception as e:
             logger.error(f"Error checking allowed file: {e}", exc_info=True)
             raise
-
-    def __del__(self):
-        logger.info("PostService instance is being destroyed.")

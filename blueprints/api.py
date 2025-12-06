@@ -18,21 +18,12 @@ def get_posts():
         try:
             logger.debug(f"Calling post_service.get_recent_posts({page})")
             posts = post_service.get_recent_posts(page)
-            logger.debug(f"Retrieved {len(posts)} posts for page {page}")
+            logger.debug(f"Retrieved {len(posts.posts)} posts for page {page}")
         except Exception as e:
             logger.error(f"Error fetching posts for page {page}: {e}", exc_info=True)
             return jsonify({"error": "Failed to fetch posts"}), 500
-        try:
-            logger.debug(f"Checking for next page after page {page}")
-            has_next = post_service.has_next_page(page)
-            logger.debug(f"Has next page: {has_next}")
-        except Exception as e:
-            logger.error(
-                f"Error checking next page for page {page}: {e}", exc_info=True
-            )
-            return jsonify({"error": "Failed to check next page"}), 500
 
-        return jsonify({"posts": posts, "has_next": has_next})
+        return jsonify({"posts": [post.model_dump(mode="json") for post in posts.posts], "has_next": posts.has_next_page})
     except Exception as e:
         logger.error(f"Unexpected error in get_posts: {e}", exc_info=True)
         logger.debug("Returning error response")
