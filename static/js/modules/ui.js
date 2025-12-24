@@ -231,3 +231,26 @@ export const initLazyPostLoading = () => {
         }
     });
 }
+
+/**
+ * Initializes image enhancement using viewer.js.
+ */
+export const initImageEnhancement = () => {
+    const galleries = document.querySelectorAll('.gallery');
+
+    galleries.forEach(gallery => {
+        const image = gallery.querySelector('img');
+        const viewer = new Viewer(gallery, {
+            movable: true,
+            zoomable: true,
+            fullscreen: true,
+            toolbar: false,
+        });
+
+        image.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            viewer.show();
+        });
+    });
+}

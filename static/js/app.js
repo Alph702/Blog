@@ -1,6 +1,6 @@
 import { fetchPosts, initTimestampHandlers } from './modules/api.js';
 import { checkSession } from './modules/auth.js';
-import { initToastHandlers, initLazyPostLoading, toggleFilter } from './modules/ui.js';
+import { initToastHandlers, initLazyPostLoading, toggleFilter, initImageEnhancement } from './modules/ui.js';
 import { VideoPlayer } from './modules/video_player.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initToastHandlers();
     initTimestampHandlers();
     initLazyPostLoading();
+    initImageEnhancement();
     
     // Initialize all video players
     document.querySelectorAll('.video-container').forEach(container => {
