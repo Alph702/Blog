@@ -6,7 +6,10 @@ const uploadBoxVideo = document.getElementById('uploadBoxVideo');
 const fileInputVideo = document.getElementById('video');
 const placeholderVideo = document.getElementById('placeholderVideo');
 
-function showToast(message, type='info') {
+// Store uploaded video ID
+let uploadedVideoId = null;
+
+function showToast(message, type = 'info') {
     let toastContainer = document.querySelector('.toast-container');
     if (!toastContainer) {
         toastContainer = document.createElement('div');
@@ -33,56 +36,183 @@ function showToast(message, type='info') {
     setTimeout(() => toast.remove(), 4000);
 }
 
-uploadBoxImage.addEventListener('click', () => fileInputImage.click());
-fileInputImage.addEventListener('change', () => {
-    const file = fileInputImage.files[0];
-    if (file) placeholderImage.textContent = `Selected: ${file.name}`;
-});
+/**
+ * Show loader in the video upload box
+ */
+function showVideoLoader() {
+    // Hide the placeholder text and show loader
+    placeholderVideo.style.display = 'none';
 
-uploadBoxImage.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    uploadBoxImage.classList.add('dragover');
-});
+    // Remove existing loader if any
+    const existingLoader = uploadBoxVideo.querySelector('.upload-loader-container');
+    if (existingLoader) existingLoader.remove();
 
-uploadBoxImage.addEventListener('dragleave', () => {
-    uploadBoxImage.classList.remove('dragover');
-});
+    // Create loader container
+    const loaderContainer = document.createElement('div');
+    loaderContainer.className = 'upload-loader-container';
+    loaderContainer.style.cssText = 'display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 20px;';
 
-uploadBoxImage.addEventListener('drop', (e) => {
-    e.preventDefault();
-    uploadBoxImage.classList.remove('dragover');
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) {
-        fileInputImage.files = e.dataTransfer.files;
-        placeholderImage.textContent = `Selected: ${file.name}`;
-    } else {
-        showToast('Please upload a valid image file.', 'warning');
+    // Create loader spinner
+    const loader = document.createElement('div');
+    loader.className = 'loader';
+
+    // Create loading text
+    const loadingText = document.createElement('p');
+    loadingText.className = 'upload-status-text';
+    loadingText.textContent = 'Uploading video...';
+    loadingText.style.cssText = 'margin: 0; color: var(--primary-color);';
+
+    loaderContainer.appendChild(loader);
+    loaderContainer.appendChild(loadingText);
+    uploadBoxVideo.appendChild(loaderContainer);
+
+    // Disable clicking during upload
+    uploadBoxVideo.style.pointerEvents = 'none';
+    uploadBoxVideo.style.opacity = '0.7';
+
+    // Disable submit button during upload
+    const submitBtn = uploadBoxVideo.closest('form')?.querySelector('button[type="submit"]');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.5';
+        submitBtn.style.cursor = 'not-allowed';
     }
-});
+}
 
-uploadBoxVideo.addEventListener('click', () => fileInputVideo.click());
-fileInputVideo.addEventListener('change', () => {
-    const file = fileInputVideo.files[0];
-    if (file) placeholderVideo.textContent = `Selected: ${file.name}`;
-});
+/**
+ * Hide loader and show success/error state
+ */
+function hideVideoLoader(success, filename = '') {
+    const loaderContainer = uploadBoxVideo.querySelector('.upload-loader-container');
+    if (loaderContainer) loaderContainer.remove();
 
-uploadBoxVideo.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    uploadBoxVideo.classList.add('dragover');
-});
+    // Re-enable submit button
+    const submitBtn = uploadBoxVideo.closest('form')?.querySelector('button[type="submit"]');
+    if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+        submitBtn.style.cursor = 'pointer';
+    }
 
-uploadBoxVideo.addEventListener('dragleave', () => {
-    uploadBoxVideo.classList.remove('dragover');
-});
+    placeholderVideo.style.display = 'block';
+    uploadBoxVideo.style.pointerEvents = 'auto';
+    uploadBoxVideo.style.opacity = '1';
 
-uploadBoxVideo.addEventListener('drop', (e) => {
-    e.preventDefault();
-    uploadBoxVideo.classList.remove('dragover');
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('video/')) {
-        fileInputVideo.files = e.dataTransfer.files;
-        placeholderVideo.textContent = `Selected: ${file.name}`;
+    if (success) {
+        placeholderVideo.innerHTML = `<span style="color: var(--primary-color);">✓ Uploaded:</span> ${filename}`;
+        uploadBoxVideo.style.borderColor = '#28a745';
     } else {
+        placeholderVideo.textContent = 'Drag & Drop video file here or click to select';
+        uploadBoxVideo.style.borderColor = 'var(--primary-color)';
+    }
+}
+
+/**
+ * Upload video immediately when file is selected
+ */
+async function uploadVideoFile(file) {
+    if (!file || !file.type.startsWith('video/')) {
         showToast('Please upload a valid video file.', 'warning');
-    }    
-});
+        return;
+    }
+
+    showVideoLoader();
+
+    const formData = new FormData();
+    formData.append('video', file);
+
+    try {
+        const response = await fetch('/api/upload-video', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            uploadedVideoId = data.video_id;
+
+            // Create or update hidden input for video_id
+            let hiddenInput = document.querySelector('input[name="video_id"]');
+            if (!hiddenInput) {
+                hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'video_id';
+                uploadBoxVideo.closest('form').appendChild(hiddenInput);
+            }
+            hiddenInput.value = uploadedVideoId;
+
+            hideVideoLoader(true, file.name);
+            showToast('Video uploaded successfully!', 'success');
+        } else {
+            hideVideoLoader(false);
+            showToast(data.error || 'Video upload failed.', 'error');
+        }
+    } catch (error) {
+        console.error('Video upload error:', error);
+        hideVideoLoader(false);
+        showToast('Video upload failed. Please try again.', 'error');
+    }
+}
+
+// Image upload handlers (unchanged functionality)
+if (uploadBoxImage && fileInputImage && placeholderImage) {
+    uploadBoxImage.addEventListener('click', () => fileInputImage.click());
+    fileInputImage.addEventListener('change', () => {
+        const file = fileInputImage.files[0];
+        if (file) placeholderImage.textContent = `Selected: ${file.name}`;
+    });
+
+    uploadBoxImage.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadBoxImage.classList.add('dragover');
+    });
+
+    uploadBoxImage.addEventListener('dragleave', () => {
+        uploadBoxImage.classList.remove('dragover');
+    });
+
+    uploadBoxImage.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadBoxImage.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+            fileInputImage.files = e.dataTransfer.files;
+            placeholderImage.textContent = `Selected: ${file.name}`;
+        } else {
+            showToast('Please upload a valid image file.', 'warning');
+        }
+    });
+}
+
+// Video upload handlers - now with immediate upload
+if (uploadBoxVideo && fileInputVideo && placeholderVideo) {
+    uploadBoxVideo.addEventListener('click', () => fileInputVideo.click());
+    fileInputVideo.addEventListener('change', () => {
+        const file = fileInputVideo.files[0];
+        if (file) {
+            uploadVideoFile(file);
+        }
+    });
+
+    uploadBoxVideo.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadBoxVideo.classList.add('dragover');
+    });
+
+    uploadBoxVideo.addEventListener('dragleave', () => {
+        uploadBoxVideo.classList.remove('dragover');
+    });
+
+    uploadBoxVideo.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadBoxVideo.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('video/')) {
+            fileInputVideo.files = e.dataTransfer.files;
+            uploadVideoFile(file);
+        } else {
+            showToast('Please upload a valid video file.', 'warning');
+        }
+    });
+}

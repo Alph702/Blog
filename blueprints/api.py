@@ -37,3 +37,40 @@ def check_admin():
     is_admin = session.get("admin", False)
     logger.debug(f"Admin status: {is_admin}")
     return jsonify({"is_admin": is_admin})
+
+
+@api_bp.route("/upload-video", methods=["POST"])
+def upload_video():
+    """Upload a video file and return the video ID for later form submission."""
+    logger.debug("upload_video() API route handler called")
+    
+    # Check if user is admin
+    if not session.get("admin"):
+        logger.warning("Unauthorized video upload attempt")
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    try:
+        if "video" not in request.files:
+            logger.error("No video file in request")
+            return jsonify({"error": "No video file provided"}), 400
+        
+        video_file = request.files["video"]
+        if video_file.filename == "":
+            logger.error("Empty video filename")
+            return jsonify({"error": "No video file selected"}), 400
+        
+        from container import video_service
+        
+        logger.debug(f"Uploading video: {video_file.filename}")
+        video_id = video_service.upload_video(video_file)
+        
+        if video_id:
+            logger.debug(f"Video uploaded successfully with ID: {video_id}")
+            return jsonify({"success": True, "video_id": video_id})
+        else:
+            logger.error("Video upload returned no ID")
+            return jsonify({"error": "Video upload failed"}), 500
+            
+    except Exception as e:
+        logger.error(f"Video upload error: {e}", exc_info=True)
+        return jsonify({"error": "Video upload failed"}), 500

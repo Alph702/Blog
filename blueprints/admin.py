@@ -56,14 +56,19 @@ def new_post():
                 return render_template("new.html")
 
             try:
-                logger.debug("Checking for video file in request")
+                logger.debug("Checking for video file or video_id in request")
                 video_id = None
-                if "video" in request.files and request.files["video"].filename != "":
+                # First check if video was pre-uploaded (video_id in form)
+                if request.form.get("video_id"):
+                    video_id = int(request.form.get("video_id"))
+                    logger.debug(f"Using pre-uploaded video_id: {video_id}")
+                # Fallback: upload video if file provided but no video_id
+                elif "video" in request.files and request.files["video"].filename != "":
                     logger.debug("Video file found, uploading")
                     video_id = video_service.upload_video(request.files["video"])
                     logger.debug(f"Video upload completed: {video_id}")
             except Exception as e:
-                logger.error(f"Video upload failed: {e}", exc_info=True)
+                logger.error(f"Video handling failed: {e}", exc_info=True)
                 flash("Video upload failed. Please try again.", "error")
                 return render_template("new.html")
 
@@ -106,6 +111,11 @@ def edit_post(post_id: int):
                 logger.debug(f"Image file: {bool(image)}")
                 video = request.files.get("video")
                 logger.debug(f"Video file: {bool(video)}")
+                # Check for pre-uploaded video_id
+                video_id = request.form.get("video_id")
+                if video_id:
+                    video_id = int(video_id)
+                logger.debug(f"Pre-uploaded video_id: {video_id}")
             except Exception as e:
                 logger.error(f"Error processing form data: {e}", exc_info=True)
                 flash(
@@ -115,7 +125,7 @@ def edit_post(post_id: int):
                 return redirect(url_for("admin.edit_post", post_id=post_id))
             try:
                 logger.debug(f"Calling post_service.update_post for post_id: {post_id}")
-                post_service.update_post(post_id, title, content, image, video)
+                post_service.update_post(post_id, title, content, image, video, video_id)
                 logger.debug(f"Post {post_id} updated successfully.")
                 flash("Post updated!", "success")
                 return redirect(url_for("blog.home"))

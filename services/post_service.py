@@ -142,6 +142,7 @@ class PostService:
         content: str,
         image_file: Optional[FileStorage] = None,
         video_file: Optional[FileStorage] = None,
+        video_id: Optional[int] = None,
     ) -> Optional[PostModel]:
         try:
             logger.debug(
@@ -175,13 +176,18 @@ class PostService:
                 raise
 
             try:
-                logger.debug("Checking for video file in update")
-                if video_file:
-                    video_id = self.video_service.upload_video(video_file)
-                    if video_id:
-                        post.video_id = video_id
+                logger.debug("Checking for video in update")
+                # Prioritize video_id if provided (pre-uploaded)
+                if video_id:
+                    logger.debug(f"Using pre-uploaded video_id: {video_id}")
+                    post.video_id = video_id
+                # Fallback to uploading video file if provided
+                elif video_file:
+                    uploaded_video_id = self.video_service.upload_video(video_file)
+                    if uploaded_video_id:
+                        post.video_id = uploaded_video_id
             except Exception as e:
-                logger.error(f"Error uploading video: {e}", exc_info=True)
+                logger.error(f"Error handling video: {e}", exc_info=True)
                 raise
             logger.debug(f"Final update data: {post.model_dump()}")
             try:
