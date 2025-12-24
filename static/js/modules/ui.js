@@ -1,3 +1,5 @@
+import { ConfettiCannon } from './confetti.js';
+
 /**
  * Shows a toast notification.
  * @param {string} message 
@@ -213,6 +215,8 @@ export const initLazyPostLoading = () => {
             hasNext = data.has_next;
             if (!hasNext) {
                 endOfPostsMessage.style.display = 'block';
+                // Trigger Confetti Cannon
+                new ConfettiCannon();
             }
 
         } catch (error) {

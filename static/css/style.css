@@ -740,3 +740,47 @@ video {
   animation: l3 1s infinite linear;
 }
 @keyframes l3 {to{transform: rotate(1turn)}}
+
+/* Confetti Cannon Styles */
+.confetti-container {
+    position: relative;
+    background: var(--background-light);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    cursor: crosshair;
+    user-select: none;
+    box-shadow: 0 0 15px var(--shadow);
+    height: 100vh;
+}
+
+#confetti-canvas {
+    display: block;
+}
+
+.confetti-copy {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    text-align: center;
+    pointer-events: none;
+    font-family: 'Kalam', cursive;
+    color: var(--text-color);
+    z-index: 5;
+}
+
+.confetti-copy h1 {
+    margin: 0;
+    color: var(--primary-color);
+    letter-spacing: 2px;
+    font-size: clamp(1.5rem, 5vw, 3rem);
+    font-weight: 700;
+    text-shadow: 0 0 10px var(--shadow);
+}
+
+.confetti-copy p {
+    margin: 10px 0 0;
+    font-size: var(--font-medium);
+    opacity: 0.8;
+}

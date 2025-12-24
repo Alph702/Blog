@@ -1,89 +1,118 @@
-{% extends "layout.html" %}
-
-{% block content %}
+{% extends "layout.html" %} {% block content %}
 
 <div class="container Post-Container" id="posts-container">
-    <h1 class="title" style="font-size: 400%;">My Blog</h1>
-    {% if 'admin' in session %}
-    <a href="{{ url_for('admin.new_post') }}">New Post</a>
-    <a href="{{ url_for('auth.logout') }}" id="logoutButton" onclick="logoutUser()">Logout</a>
-    {% else %}
-    <a href="{{ url_for('auth.login') }}" id="loginButton">Login</a>
-    {% endif %}
+  <h1 class="title" style="font-size: 400%">My Blog</h1>
+  {% if 'admin' in session %}
+  <a href="{{ url_for('admin.new_post') }}">New Post</a>
+  <a
+    href="{{ url_for('auth.logout') }}"
+    id="logoutButton"
+    onclick="logoutUser()"
+    >Logout</a
+  >
+  {% else %}
+  <a href="{{ url_for('auth.login') }}" id="loginButton">Login</a>
+  {% endif %}
 
-    <button id="toggleFilterBtn" onclick="toggleFilter()">Show Filter Options</button>
-    <div id="filterPanel" class="filter-panel">
-        <form method="GET" action="{{ url_for('blog.filter_posts') }}" class="filter-form">
-            <div class="filter-group">
-                <label for="year">Year:</label>
-                <select id="year" name="year">
-                    <option value="any">Any</option>
-                    {% for y in available_years %}
-                    <option value="{{ y }}">{{ y }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="filter-group">
-                <label for="month">Month:</label>
-                <select id="month" name="month">
-                    <option value="any">Any</option>
-                    {% for m in available_months %}
-                    <option value="{{ m }}">{{ m }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="filter-group">
-                <label for="day">Day:</label>
-                <select id="day" name="day">
-                    <option value="any">Any</option>
-                    {% for d in available_days %}
-                    <option value="{{ d }}">{{ d }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <button type="submit">Apply Filter</button>
-            <a href="{{ url_for('blog.home') }}" class="filter-reset-btn">Reset Filters</a>
-        </form>
-    </div>
+  <button id="toggleFilterBtn" onclick="toggleFilter()">
+    Show Filter Options
+  </button>
+  <div id="filterPanel" class="filter-panel">
+    <form
+      method="GET"
+      action="{{ url_for('blog.filter_posts') }}"
+      class="filter-form"
+    >
+      <div class="filter-group">
+        <label for="year">Year:</label>
+        <select id="year" name="year">
+          <option value="any">Any</option>
+          {% for y in available_years %}
+          <option value="{{ y }}">{{ y }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="month">Month:</label>
+        <select id="month" name="month">
+          <option value="any">Any</option>
+          {% for m in available_months %}
+          <option value="{{ m }}">{{ m }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="day">Day:</label>
+        <select id="day" name="day">
+          <option value="any">Any</option>
+          {% for d in available_days %}
+          <option value="{{ d }}">{{ d }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit">Apply Filter</button>
+      <a href="{{ url_for('blog.home') }}" class="filter-reset-btn"
+        >Reset Filters</a
+      >
+    </form>
+  </div>
 
-    <hr>
+  <hr />
 
-    {% for post in posts %}
-    <div class="post">
-    <a href="{{ url_for('blog.view_post', post_id=post.id) }}" class="post-button">
-            <h1 class="Heding">{{ post.title }}</h1>
-            <p class="text">{{ post.content | safe }}</p>
-            {% if post.image %}
-            <div class="gallery">
-                <img src="{{ post.image }}" alt="Post Image" class="image" loading="lazy">
-            </div>
-            <br>
-            {% endif %}
-            {% if post.video %}
-            <a>
-                {% from "components/video_player.html" import video_player %}
-                {{ video_player(post.video) }}
-            </a>
-            {% endif %}
-            <small class="timestamp" data-ts="{{ post.timestamps }}">
-                Posted on ...
-            </small>
-            <br>
-            {% if 'admin' in session %}
-            <a style="padding-right: 5px;" href="{{ url_for('admin.edit_post', post_id=post.id) }}">Edit</a>
-            <a href="{{ url_for('admin.delete_post', post_id=post.id) }}">Delete</a>
-            {% endif %}
-        </a>
-    </div>
-    {% endfor %}
+  {% for post in posts %}
+  <div class="post">
+    <a
+      href="{{ url_for('blog.view_post', post_id=post.id) }}"
+      class="post-button"
+    >
+      <h1 class="Heding">{{ post.title }}</h1>
+      <p class="text">{{ post.content | safe }}</p>
+      {% if post.image %}
+      <div class="gallery">
+        <img
+          src="{{ post.image }}"
+          alt="Post Image"
+          class="image"
+          loading="lazy"
+        />
+      </div>
+      <br />
+      {% endif %} {% if post.video %}
+      <a>
+        {% from "components/video_player.html" import video_player %} {{
+        video_player(post.video) }}
+      </a>
+      {% endif %}
+      <small class="timestamp" data-ts="{{ post.timestamps }}">
+        Posted on ...
+      </small>
+      <br />
+      {% if 'admin' in session %}
+      <a
+        style="padding-right: 5px"
+        href="{{ url_for('admin.edit_post', post_id=post.id) }}"
+        >Edit</a
+      >
+      <a href="{{ url_for('admin.delete_post', post_id=post.id) }}">Delete</a>
+      {% endif %}
+    </a>
+  </div>
+  {% endfor %}
 </div>
 
-<div id="loading-indicator" style="display: none;">
-    <div class="loader"></div>
+<div id="loading-indicator" style="display: none">
+  <div class="loader"></div>
 </div>
 
-<div id="end-of-posts-message" style="display: none;">
-    <p>You've reached the end.</p>
+<div id="end-of-posts-message" style="display: none">
+  
+  <div class="confetti-container">
+    <canvas id="confetti-canvas"></canvas>
+    <div class="confetti-copy">
+      <h1>You've reached the end.</h1>
+      <p>Click, drag & release to celebrate!</p>
+    </div>
+  </div>
 </div>
 
 {% endblock %}
