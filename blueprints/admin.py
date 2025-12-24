@@ -85,13 +85,13 @@ def new_post():
         return render_template("new.html")
 
 
-@admin_bp.route("/edit/<int:post_id>", methods=["GET", "PUT"])
+@admin_bp.route("/edit/<int:post_id>", methods=["GET", "POST"])
 @admin_required
 def edit_post(post_id: int):
     logger.debug(f"edit_post() route handler called with post_id: {post_id}")
     try:
-        if request.method == "PUT":
-            logger.debug(f"Processing PUT request for post_id: {post_id}")
+        if request.method == "POST":
+            logger.debug(f"Processing POST request for post_id: {post_id}")
             try:
                 logger.debug("Extracting form fields: title, content, image, video")
                 title = request.form.get("title")

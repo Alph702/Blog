@@ -1,4 +1,5 @@
-from flask import Flask
+from flask import Flask, helpers
+import os
 from config import Config
 import blueprints
 from utils.logger import setup_logging
@@ -26,6 +27,15 @@ app.register_blueprint(blueprints.api_bp)
 def handle_exception(e):
     main_logger.error(f"An unhandled exception occurred: {e}", exc_info=True)
     return "Internal Server Error", 500
+
+
+@app.route("/favicon.ico")
+def favicon():
+    return helpers.send_from_directory(
+        os.path.join(app.root_path, "static"),
+        "favicon.ico",
+        mimetype="image/vnd.microsoft.icon",
+    )
 
 
 if __name__ == "__main__":

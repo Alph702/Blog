@@ -1,44 +1,84 @@
-{% extends "layout.html" %}
-{% block title %}Edit Post{% endblock %}
-
-{% block content %} 
+{% extends "layout.html" %} {% block title %}Edit Post{% endblock %} {% block
+content %}
 
 <div class="container form-container">
-    <h1 class="new-post-h">Edit Post</h1>
-    <button class="full-screen-button" onclick="FullScreen()"><img
-            src="{{ url_for('static', filename='full-screen.svg')}}" alt="Full Screen"></button>
-    <form class="form" method="POST" enctype="multipart/form-data" action="{{ url_for('admin.edit_post', post_id=post.id) }}">
-        <div id="popup" class="popup">press <box>ESC</box> to exit full screen</div>
-        <input class="form-text-input" type="text" name="title" placeholder="Title" value="{{ post.title }}">
-        <textarea class="editor" id="editor" name="content" placeholder="Write your post here..." rows="5"
-            required>{{ post.content | safe }}</textarea>
-        {% if post.image %}
-        <p>Current Image:</p>
-        <img src="{{ post.image }}" alt="Current Post Image"
-            style="max-width: 200px; height: auto; margin-bottom: 10px;">
-        <input type="hidden" name="current_image_url" value="{{ post.image }}">
-        {% endif %}
-        <div class="upload-box form-file-input" id="uploadBoxImage">
-            <h2 class="uploader-title">Upload Image</h2>
-            <p id="placeholderImage">Drag & Drop image file here or click to select</p>
-            <input class="fileinput" type="file" id="image" name="image" accept="image/*"/>
-        </div>
-        {% if post.video %}
-        <p>Current Video:</p>
-        {% from "components/video_player.html" import video_player %}
-        {{ video_player(post.video) }}
-        <input type="hidden" name="current_video_id" value="{{ post.video.id }}">
-        {% endif %}
-        <div class="upload-box form-file-input" id="uploadBoxVideo">
-            <h2 class="uploader-title">Upload Video</h2>
-            <p id="placeholderVideo">Drag & Drop video file here or click to select</p>
-            <input class="fileinput" type="file" id="video" name="video" accept="video/*"/>
-        </div>
-        <button type="submit">Update Post</button>
-    </form>
+  <h1 class="new-post-h">Edit Post</h1>
+  <button class="full-screen-button" onclick="FullScreen()">
+    <img
+      src="{{ url_for('static', filename='full-screen.svg')}}"
+      alt="Full Screen"
+    />
+  </button>
+  <form
+    class="form"
+    method="POST"
+    enctype="multipart/form-data"
+    action="{{ url_for('admin.edit_post', post_id=post.id) }}"
+  >
+    <div id="popup" class="popup">press <box>ESC</box> to exit full screen</div>
+    <input
+      class="form-text-input"
+      type="text"
+      name="title"
+      placeholder="Title"
+      value="{{ post.title }}"
+    />
+    <textarea
+      class="editor"
+      id="editor"
+      name="content"
+      placeholder="Write your post here..."
+      rows="5"
+      required
+    >
+{{ post.content | safe }}</textarea
+    >
+    {% if post.image %}
+    <p>Current Image:</p>
+    <img
+      src="{{ post.image }}"
+      alt="Current Post Image"
+      style="max-width: 200px; height: auto; margin-bottom: 10px"
+    />
+    <input type="hidden" name="current_image_url" value="{{ post.image }}" />
+    {% endif %}
+    <div class="upload-box form-file-input" id="uploadBoxImage">
+      <h2 class="uploader-title">Upload Image</h2>
+      <p id="placeholderImage">
+        Drag & Drop image file here or click to select
+      </p>
+      <input
+        class="fileinput"
+        type="file"
+        id="image"
+        name="image"
+        accept="image/*"
+      />
+    </div>
+    {% if post.video %}
+    <p>Current Video:</p>
+    {% from "components/video_player.html" import video_player %} {{
+    video_player(post.video) }}
+    <input type="hidden" name="current_video_id" value="{{ post.video.id }}" />
+    {% endif %}
+    <div class="upload-box form-file-input" id="uploadBoxVideo">
+      <h2 class="uploader-title">Upload Video</h2>
+      <p id="placeholderVideo">
+        Drag & Drop video file here or click to select
+      </p>
+      <input
+        class="fileinput"
+        type="file"
+        id="video"
+        name="video"
+        accept="video/*"
+      />
+    </div>
+    <button type="submit">Update Post</button>
+  </form>
 
-    <br>
-    <a href="" onclick="window.history.back()">Back to Post</a>
+  <br />
+  <a href="" onclick="window.history.back()">Back to Post</a>
 </div>
 <script src="{{ url_for('static', filename='js/uploader.js') }}"></script>
 <script src="{{ url_for('static', filename='js/editor.js') }}"></script>

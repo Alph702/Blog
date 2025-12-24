@@ -130,7 +130,11 @@ class PostRepository:
             logger.debug("Inserting new post record")
             response = (
                 self.client.table("posts")
-                .insert(post.model_dump(mode="json"))
+                .insert(
+                    post.model_dump(
+                        mode="json", exclude={"timestamps", "timestamp", "video"}
+                    )
+                )
                 .execute()
             )
             logger.debug(
@@ -160,7 +164,11 @@ class PostRepository:
             logger.debug("Updating post record")
             response = (
                 self.client.table("posts")
-                .update(post.model_dump(mode="json"))
+                .update(
+                    post.model_dump(
+                        mode="json", exclude={"timestamps", "timestamp", "video"}
+                    )
+                )
                 .eq("id", post.id)
                 .execute()
             )
