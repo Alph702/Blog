@@ -3,7 +3,7 @@ name = "blog"
 version = "0.1.0"
 description = "Hacker-Themed Flask Blog Platform"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.12"
 license = "MIT"
 dependencies = [
     "apscheduler>=3.11.0",

@@ -15,3 +15,5 @@ tmp/*
 *.log
 logs/
 logs/*.log
+
+*.lock
